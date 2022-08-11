@@ -2,22 +2,16 @@
 pragma solidity ^0.8.0;
 
 import "./NFProof.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TheBurn is NFProof {
+contract TheBurn is Ownable {
 
     uint256 public burnPrice;
     NFProof public nfProof;
-    string public purpose;
 
     constructor(address proofContract) {
       burnPrice = 1000000000000000; //.001 ether
       nfProof = NFProof(proofContract);
-    }
-
-    function testSetPurpose(string memory newPurpose) public payable returns (string memory) {
-      require(msg.value>= burnPrice);
-      purpose = newPurpose;
-      return purpose;
     }
 
    function setburnPrice(uint256 newPrice) public onlyOwner {

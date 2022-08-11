@@ -36,7 +36,7 @@ interface IERC4907 {
     
 }
 
-contract NFProof is IERC4907, IERC721, ERC721, ERC721Burnable, ERC721Enumerable, Ownable {
+contract NFProof is IERC4907, IERC721, ERC721Burnable, ERC721Enumerable, Ownable {
     
     struct UserInfo 
     {
@@ -64,6 +64,7 @@ contract NFProof is IERC4907, IERC721, ERC721, ERC721Burnable, ERC721Enumerable,
     string public nfpURI;
 
     event Mint(uint256 tokenId, address minter);
+    event Burn(uint256 tokenId);
 
 
 
@@ -74,6 +75,7 @@ contract NFProof is IERC4907, IERC721, ERC721, ERC721Burnable, ERC721Enumerable,
     mapping(address => mapping(uint256 => bool)) public tokenHasBeenPaidfor;
     mapping(uint256 => bool) private tokenIsMinting;
     mapping(uint256 => bool) private tokenIsBurning;
+
 
     constructor()
      ERC721("NonFungibleProof","NFP"){
@@ -93,7 +95,12 @@ contract NFProof is IERC4907, IERC721, ERC721, ERC721Burnable, ERC721Enumerable,
         nfpURI = newURI;
     }
 
-    function init(address newBurnerAddress)public onlyOwner {
+    function getUserFromToken(address originContractAddress, uint256 originTokenId) public view returns(address proofUser) {
+        uint256 findToken = tokenToToken[originContractAddress][originTokenId];
+        return userOf(findToken);
+    }
+
+    function init(address newBurnerAddress) public onlyOwner {
         require(initVar=true, "this has already been run");
         burnerAddress = newBurnerAddress;
         initVar = false;
@@ -141,7 +148,7 @@ contract NFProof is IERC4907, IERC721, ERC721, ERC721Burnable, ERC721Enumerable,
         return interfaceId == type(IERC4907).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    //bulk mint an array of tokens
+    //bulk pay an array of tokens
     function payForTokens(address originContractAddress, uint256[] memory originTokenIds) public payable {
         uint256 totalPrice = mintPrice*originTokenIds.length;
         require(msg.value >=totalPrice, "you didn't pay enough for all of these mints");
@@ -176,7 +183,7 @@ contract NFProof is IERC4907, IERC721, ERC721, ERC721Burnable, ERC721Enumerable,
         return tokenId;
     }
 
-    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external payable virtual{
+    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external payable virtual {
         require(msg.sender == burnerAddress, "this aint authorized");
         require(tokenToToken[originContractAddress][originTokenId] == proofTokenId, "these do not represent the same token");
         delete _users[proofTokenId];
@@ -186,6 +193,7 @@ contract NFProof is IERC4907, IERC721, ERC721, ERC721Burnable, ERC721Enumerable,
         tokenHasMinted[originContractAddress][originTokenId] = false;
         tokenHasBeenPaidfor[originContractAddress][originTokenId] = false;
         tokenIsBurning[proofTokenId] = false;
+        emit Burn(proofTokenId);
     }
 
     function mintWithdraw() public onlyOwner {
