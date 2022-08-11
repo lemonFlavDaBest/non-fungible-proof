@@ -1,5 +1,3 @@
-// deploy/00_deploy_your_contract.js
-
 const { ethers } = require("hardhat");
 
 const localChainId = "31337";
@@ -17,66 +15,64 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
-  await deploy("YourContract", {
+  console.log("PREDEPLOY");
+  /*await deploy("IERC4907", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
-    // args: [ "Hello", ethers.utils.parseEther("1.5") ],
+    log: true,
+  });
+  
+
+  const IERC4907 = await ethers.getContract("IERC4907", deployer);
+  console.log("DEPLOYED1");
+  */
+
+  await deploy("NFProof", {
+    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+    from: deployer,
     log: true,
     waitConfirmations: 5,
   });
 
-  // Getting a previously deployed contract
-  const YourContract = await ethers.getContract("YourContract", deployer);
-  /*  await YourContract.setPurpose("Hello");
-  
-    // To take ownership of yourContract using the ownable library uncomment next line and add the 
-    // address you want to be the owner. 
-    
-    await YourContract.transferOwnership(
-      "ADDRESS_HERE"
-    );
+  console.log("DEPLOYED2");
+  const nfProof = await ethers.getContract("NFProof", deployer);
 
-    //const YourContract = await ethers.getContractAt('YourContract', "0xaAC799eC2d00C013f1F11c37E654e59B0429DF6A") //<-- if you want to instantiate a version of a contract at a specific address!
-  */
+  // paste in your front-end address here to get 10 balloons on deploy:
+  /*await balloons.transfer(
+    "0x23191818B5dE05b191A20B1F8F2BacF05331f98F",
+    "" + 10 * 10 ** 18
+  );*/
 
-  /*
-  //If you want to send value to an address from the deployer
-  const deployerWallet = ethers.provider.getSigner()
-  await deployerWallet.sendTransaction({
-    to: "0x34aA3F359A9D614239015126635CE7732c18fDF3",
-    value: ethers.utils.parseEther("0.001")
-  })
-  */
+  // // uncomment to init DEX on deploy:
+ 
+  // // If you are going to the testnet make sure your deployer account has enough ETH
+  //await balloons.approve(dex.address, ethers.utils.parseEther("100"));
+  //console.log("INIT exchange...");
+  //await dex.init(ethers.utils.parseEther("5"), {value: ethers.utils.parseEther("5"),gasLimit: 200000,});
 
-  /*
-  //If you want to send some ETH to a contract on deploy (make your constructor payable!)
-  const yourContract = await deploy("YourContract", [], {
-  value: ethers.utils.parseEther("0.05")
+  await deploy("TheBurn", {
+    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+    from: deployer,
+    args: [nfProof.address],
+    log: true,
+    waitConfirmations: 5,
   });
-  */
 
-  /*
-  //If you want to link a library into your contract:
-  // reference: https://github.com/austintgriffith/scaffold-eth/blob/using-libraries-example/packages/hardhat/scripts/deploy.js#L19
-  const yourContract = await deploy("YourContract", [], {}, {
-   LibraryName: **LibraryAddress**
+  const theBurn = await ethers.getContract("TheBurn", deployer);
+  console.log("DEPLOYED3");
+
+  await nfProof.init(theBurn.address);
+
+  console.log("DEPLOYED4");
+
+  //theBurn.transferOwnership(YOUR_ADDRESS_HERE);
+  //nfProof.transferOwnership(YOUR_ADDRESS_HERE);
+  await deploy("SampleNFT", {
+    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+    from: deployer,
+    //args: [nfProof.address],
+    log: true,
+    waitConfirmations: 5,
   });
-  */
-
-  // Verify from the command line by running `yarn verify`
-
-  // You can also Verify your contracts with Etherscan here...
-  // You don't want to verify on localhost
-  // try {
-  //   if (chainId !== localChainId) {
-  //     await run("verify:verify", {
-  //       address: YourContract.address,
-  //       contract: "contracts/YourContract.sol:YourContract",
-  //       constructorArguments: [],
-  //     });
-  //   }
-  // } catch (error) {
-  //   console.error(error);
-  // }
 };
-module.exports.tags = ["YourContract"];
+module.exports.tags = ["SampleNFT", "NFProof", "TheBurn"];
