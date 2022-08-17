@@ -9,7 +9,7 @@ contract TheBurn is Ownable {
     uint256 public burnPrice;
     NFProof public nfProof;
 
-    constructor(address proofContract) {
+    constructor(address payable proofContract) {
       burnPrice = 1000000000000000; //.001 ether
       nfProof = NFProof(proofContract);
     }
@@ -30,4 +30,7 @@ contract TheBurn is Ownable {
       (bool succ, )= owner.call{value:address(this).balance}("");
       require(succ, "withdraw failed");
     }
+
+  receive() external payable {}
+  fallback() external payable {}
 }
