@@ -1,9 +1,24 @@
-import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch } from "antd";
-import React, { useState } from "react";
-import { utils } from "ethers";
+import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch, List, Result, Row, Col } from "antd";
+import React, { useState, useEffect } from "react";
+import { utils, BigNumber } from "ethers";
 import { SyncOutlined } from "@ant-design/icons";
+import {
+  useBalance,
+  useContractLoader,
+  useContractReader,
+  useGasPrice,
+  useOnBlock,
+  useUserProviderAndSigner,
+} from "eth-hooks";
+import { Address, Balance, Events, AddressInput } from "../components";
 
-import { Address, Balance, Events } from "../components";
+/*
+I think this component will give people the proofs they own, if there is a current user, and to set the user of the tokens
+Similar to viewproofs, but list only the owners, then give the ability to add users to it or edit.
+List of tokens:
+3 columns I think:  owner and the token, if current user and set user, what the token represents
+*/
+
 
 export default function SetProofs({
   purpose,
@@ -15,207 +30,218 @@ export default function SetProofs({
   tx,
   readContracts,
   writeContracts,
+  blockExplorer
 }) {
-  const [newPurpose, setNewPurpose] = useState("loading...");
+  
+  const [mintAddress, setMintAddress] = useState();
+  const balance = useContractReader(readContracts, "NFProof", "balanceOf", [address]);
+  const [ownershipToAddresses, setOwnershipToAddresses] = useState({});
+  console.log("🤗 balance:", balance);
+  const yourBalance = balance && balance.toNumber && balance.toNumber();
+  const [yourProofTokens, setYourProofTokens] = useState([]);
+  const [userTokens, setUserTokens] = useState()
+  const [validateTokens, setValidateTokens] = useState()
+  const [expiryTime, setExpiryTime] = useState()
+
+  async function checkValidity (tokenId) {
+    const result = await readContracts.NFProof.isValidUserToken(tokenId);
+    console.log(result)
+    return result === true? true : false;
+  }
+  useEffect(() => {
+    //I want this function to get make an array of validation objects with corresponding tokenId and boolean validation
+    const updateValidateTokens = async () => {
+    const validationInfo = [];
+    for(let i = 0; i <yourProofTokens.length; i++) {
+      const tokenId = yourProofTokens[i].id;
+      const result = await readContracts.NFProof.isValidUserToken(tokenId);
+      console.log("isValidUserToken_result:", result)
+      validationInfo.push({proofTokenId: tokenId, isValid: result})
+    }
+    setValidateTokens(validationInfo)
+  }
+  updateValidateTokens()
+  }, [yourProofTokens])
+
+  useEffect(() => {
+    const updateYourProofTokens = async () => {
+      const proofTokensUpdate = [];
+      for (let tokenIndex = 0; tokenIndex < balance; tokenIndex++) {
+        try {
+          console.log("GEtting token index", tokenIndex);
+          const tokenId = await readContracts.NFProof.tokenOfOwnerByIndex(address, tokenIndex);
+          console.log("tokenId", tokenId);
+          try {
+            proofTokensUpdate.push({id: tokenId, owner:address});
+            console.log("proofTokenUpdates:", proofTokensUpdate)
+          } catch (e) {
+            console.log(e);
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      }
+      console.log("proofTokenUpdatesFINAL:", proofTokensUpdate)
+      setYourProofTokens(proofTokensUpdate);
+    };
+    updateYourProofTokens();
+  }, [address, yourBalance]);
+
+  useEffect(() => {
+    //I want this function to get more information about each token, such as the user, expiry, setuser, what the token represents
+    //use this mapping
+    const updateUserTokens = async () => {
+    const userInfo = [];
+    for(let i = 0; i <yourProofTokens.length; i++) {
+      const tokenId = yourProofTokens[i].id;
+      //use id to find users
+      console.log("getting user from tokenId:", tokenId)
+      const user = await readContracts.NFProof.userOf(tokenId.toNumber())
+      console.log("usertohexstring:", user)
+      if (user == '0x0000000000000000000000000000000000000000') {
+        userInfo.push({user: 0, proofTokenId: tokenId});
+      }else {
+        const userObject = await readContracts.NFProof._users(tokenId);
+        userInfo.push(userObject);
+      }
+      console.log("i:", i, "userInfo:",userInfo)
+    }
+    setUserTokens(userInfo)
+  }
+  updateUserTokens()
+  }, [yourProofTokens])
+
+  const onDateChange = (date, dateString) => {
+    console.log(date, dateString);
+    const reformDate = new Date(dateString);
+    const timestampInSeconds = Math.floor(reformDate.getTime() / 1000);
+    setExpiryTime(timestampInSeconds);
+    console.log("UNIX TimeStamp:", timestampInSeconds);
+    return timestampInSeconds;
+  };
+
+  /*async function onMint() {
+     //look how you call setPurpose on your contract: 
+     //notice how you pass a call back for tx updates too 
+            const result = tx(writeContracts.YourContract.setPurpose(newPurpose), update => {
+              console.log("📡 Transaction Update:", update);
+              if (update && (update.status === "confirmed" || update.status === 1)) {
+                console.log(" 🍾 Transaction " + update.hash + " finished!");
+                console.log(
+                  " ⛽️ " +
+                    update.gasUsed +
+                    "/" +
+                    (update.gasLimit || update.gas) +
+                    " @ " +
+                    parseFloat(update.gasPrice) / 1000000000 +
+                    " gwei",
+                );
+              }
+            });
+            console.log("awaiting metamask/web3 confirm result...", result);
+            console.log(await result);
+          
+  }*/
 
   return (
     <div>
-      {/*
-        ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
-      */}
-      <div style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}>
-        <h2>Set a Wallet to give Proof to:</h2>
-        <h4>purpose: {purpose}</h4>
-        <Divider />
-        <div style={{ margin: 8 }}>
-          <Input
-            onChange={e => {
-              setNewPurpose(e.target.value);
-            }}
-          />
-          <Button
-            style={{ marginTop: 8 }}
-            onClick={async () => {
-              /* look how you call setPurpose on your contract: */
-              /* notice how you pass a call back for tx updates too */
-              const result = tx(writeContracts.YourContract.setPurpose(newPurpose), update => {
-                console.log("📡 Transaction Update:", update);
-                if (update && (update.status === "confirmed" || update.status === 1)) {
-                  console.log(" 🍾 Transaction " + update.hash + " finished!");
-                  console.log(
-                    " ⛽️ " +
-                      update.gasUsed +
-                      "/" +
-                      (update.gasLimit || update.gas) +
-                      " @ " +
-                      parseFloat(update.gasPrice) / 1000000000 +
-                      " gwei",
+        <List
+                bordered
+                dataSource={yourProofTokens}
+                itemLayout="vertical"
+                //render item cannot be async
+                renderItem={(item) => {
+                  const proofTokensId = item.id.toNumber();
+                  const userObject = userTokens.find(({proofTokenId}) => proofTokenId.toNumber() == proofTokensId );
+                  const validateObject = validateTokens.find(({proofTokenId}) => proofTokenId.toNumber() == proofTokensId)
+                  
+                  return (
+                    <List.Item key={proofTokensId}>
+                      <div>
+                        <Row gutter={16}>
+                          <Col span={8}>
+                          <Card
+                              title={
+                                <div>
+                                  <span style={{ fontSize: 16, marginRight: 8 }}>#{proofTokensId}</span>
+                                </div>
+                              }
+                            >
+                              <div>{proofTokensId}</div>
+                              Your Contract Address:
+                                <Address
+                                  address={readContracts && readContracts.NFProof ? readContracts.NFProof.address : null}
+                                  ensProvider={mainnetProvider}
+                                  fontSize={16}
+                                />
+                        
+                          </Card>
+                          </Col>
+                          <Col span={8}>
+                          <Card
+                        title={
+                          <div>
+                            <span style={{ fontSize: 16, marginRight: 8 }}>User:</span>
+                          </div>
+                        }
+                      >
+                        <div>{proofTokensId}</div>
+                        Your Contract Address:
+                          <Address
+                            address={userObject && userObject.user > 0 ? userObject.user : null}
+                            ensProvider={mainnetProvider}
+                            fontSize={16}
+                          />
+                          <Result
+                            status= {validateObject && validateObject.isValid == true? "success" : "error"}
+                            title="Token Validation:"
+                          />
+                      </Card>
+                          </Col>
+                          <Col span={8}>
+                            <Card title="Owner" bordered={true}>
+                
+                        <Address
+                          address={item.owner}
+                          ensProvider={mainnetProvider}
+                          blockExplorer={blockExplorer}
+                          fontSize={16}
+                        />
+                        <AddressInput
+                          ensProvider={mainnetProvider}
+                          placeholder="Set Proof of Ownersip to address"
+                          value={ownershipToAddresses[proofTokensId]}
+                          onChange={newValue => {
+                            const update = {};
+                            update[proofTokensId] = newValue;
+                            setOwnershipToAddresses({ ...ownershipToAddresses, ...update });
+                          }}
+                        />
+                        When do you want this to expire?
+                        <DatePicker
+                          style={{
+                            width: '50%',
+                          }}
+                          onChange ={onDateChange}
+                        />
+                        <Button
+                          onClick={() => {
+                            console.log("writeContracts", writeContracts);
+                            tx(writeContracts.NFProof.setUser(proofTokensId,  ownershipToAddresses[proofTokensId], expiryTime));
+                          }}
+                        >
+                          Set as Proof of Ownership
+                        </Button>
+                      
+                            </Card>
+                          </Col>
+                        </Row>
+                        </div>
+                      
+                    </List.Item>
                   );
-                }
-              });
-              console.log("awaiting metamask/web3 confirm result...", result);
-              console.log(await result);
-            }}
-          >
-            Set Purpose!
-          </Button>
-        </div>
-        <Divider />
-        Your Address:
-        <Address address={address} ensProvider={mainnetProvider} fontSize={16} />
-        <Divider />
-        ENS Address Example:
-        <Address
-          address="0x34aA3F359A9D614239015126635CE7732c18fDF3" /* this will show as austingriffith.eth */
-          ensProvider={mainnetProvider}
-          fontSize={16}
-        />
-        <Divider />
-        {/* use utils.formatEther to display a BigNumber: */}
-        <h2>Your Balance: {yourLocalBalance ? utils.formatEther(yourLocalBalance) : "..."}</h2>
-        <div>OR</div>
-        <Balance address={address} provider={localProvider} price={price} />
-        <Divider />
-        <div>🐳 Example Whale Balance:</div>
-        <Balance balance={utils.parseEther("1000")} provider={localProvider} price={price} />
-        <Divider />
-        {/* use utils.formatEther to display a BigNumber: */}
-        <h2>Your Balance: {yourLocalBalance ? utils.formatEther(yourLocalBalance) : "..."}</h2>
-        <Divider />
-        Your Contract Address:
-        <Address
-          address={readContracts && readContracts.YourContract ? readContracts.YourContract.address : null}
-          ensProvider={mainnetProvider}
-          fontSize={16}
-        />
-        <Divider />
-        <div style={{ margin: 8 }}>
-          <Button
-            onClick={() => {
-              /* look how you call setPurpose on your contract: */
-              tx(writeContracts.YourContract.setPurpose("🍻 Cheers"));
-            }}
-          >
-            Set Purpose to &quot;🍻 Cheers&quot;
-          </Button>
-        </div>
-        <div style={{ margin: 8 }}>
-          <Button
-            onClick={() => {
-              /*
-              you can also just craft a transaction and send it to the tx() transactor
-              here we are sending value straight to the contract's address:
-            */
-              tx({
-                to: writeContracts.YourContract.address,
-                value: utils.parseEther("0.001"),
-              });
-              /* this should throw an error about "no fallback nor receive function" until you add it */
-            }}
-          >
-            Send Value
-          </Button>
-        </div>
-        <div style={{ margin: 8 }}>
-          <Button
-            onClick={() => {
-              /* look how we call setPurpose AND send some value along */
-              tx(
-                writeContracts.YourContract.setPurpose("💵 Paying for this one!", {
-                  value: utils.parseEther("0.001"),
-                }),
-              );
-              /* this will fail until you make the setPurpose function payable */
-            }}
-          >
-            Set Purpose With Value
-          </Button>
-        </div>
-        <div style={{ margin: 8 }}>
-          <Button
-            onClick={() => {
-              /* you can also just craft a transaction and send it to the tx() transactor */
-              tx({
-                to: writeContracts.YourContract.address,
-                value: utils.parseEther("0.001"),
-                data: writeContracts.YourContract.interface.encodeFunctionData("setPurpose(string)", [
-                  "🤓 Whoa so 1337!",
-                ]),
-              });
-              /* this should throw an error about "no fallback nor receive function" until you add it */
-            }}
-          >
-            Another Example
-          </Button>
-        </div>
-      </div>
-
-      {/*
-        📑 Maybe display a list of events?
-          (uncomment the event and emit line in YourContract.sol! )
-      */}
-      <Events
-        contracts={readContracts}
-        contractName="YourContract"
-        eventName="SetPurpose"
-        localProvider={localProvider}
-        mainnetProvider={mainnetProvider}
-        startBlock={1}
-      />
-
-      <div style={{ width: 600, margin: "auto", marginTop: 32, paddingBottom: 256 }}>
-        <Card>
-          Check out all the{" "}
-          <a
-            href="https://github.com/austintgriffith/scaffold-eth/tree/master/packages/react-app/src/components"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            📦 components
-          </a>
-        </Card>
-
-        <Card style={{ marginTop: 32 }}>
-          <div>
-            There are tons of generic components included from{" "}
-            <a href="https://ant.design/components/overview/" target="_blank" rel="noopener noreferrer">
-              🐜 ant.design
-            </a>{" "}
-            too!
-          </div>
-
-          <div style={{ marginTop: 8 }}>
-            <Button type="primary">Buttons</Button>
-          </div>
-
-          <div style={{ marginTop: 8 }}>
-            <SyncOutlined spin /> Icons
-          </div>
-
-          <div style={{ marginTop: 8 }}>
-            Date Pickers?
-            <div style={{ marginTop: 2 }}>
-              <DatePicker onChange={() => {}} />
-            </div>
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Slider range defaultValue={[20, 50]} onChange={() => {}} />
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Switch defaultChecked onChange={() => {}} />
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Progress percent={50} status="active" />
-          </div>
-
-          <div style={{ marginTop: 32 }}>
-            <Spin />
-          </div>
-        </Card>
-      </div>
+                }}
+              />
     </div>
   );
 }
