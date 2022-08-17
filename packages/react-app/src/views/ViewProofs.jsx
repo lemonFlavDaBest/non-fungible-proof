@@ -5,6 +5,11 @@ import { SyncOutlined } from "@ant-design/icons";
 
 import { Address, Balance, Events } from "../components";
 
+/*
+In this file I think I want to list someones proof tokens that they are set as a user on
+I think there is an ERC721 function in the Rounak Banik article on devcommunity for finding all of a users nfts.
+*/
+
 export default function ViewProofs({
   purpose,
   address,
@@ -17,6 +22,9 @@ export default function ViewProofs({
   writeContracts,
 }) {
   const [newPurpose, setNewPurpose] = useState("loading...");
+  const [setNFTCollection, nftCollection] = useState();
+  const [setOriginalTokenId, originalTokenId] = useState();
+  const [setProofTokenId, proofTokenId] = useState();
 
   return (
     <div>
@@ -28,6 +36,11 @@ export default function ViewProofs({
         <h4>Search for an NFT and we will give you the Proof Token and User of it. </h4>
         <Divider />
         <div style={{ margin: 8 }}>
+          <Input
+            onChange={e => {
+              setNewPurpose(e.target.value);
+            }}
+          />
           <Input
             onChange={e => {
               setNewPurpose(e.target.value);
