@@ -29,7 +29,7 @@ import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { Home, ExampleUI, Hints, Subgraph, Minter, MintSamples, Burner } from "./views";
+import { Home, ExampleUI, Hints, Subgraph, Minter, MintSamples, Burner, ViewProof, SetProofs, EditProof, BurnProof } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 
 const { ethers } = require("ethers");
@@ -315,6 +315,12 @@ function App(props) {
         <Menu.Item key="/burner">
           <Link to="/burner">Burner</Link>
         </Menu.Item>
+        <Menu.Item key="/findproofs">
+          <Link to="/findproofs">Find Proofs</Link>
+        </Menu.Item>
+        <Menu.Item key="/setproofs">
+          <Link to="/setproofs">Set Proofs</Link>
+        </Menu.Item>
         
       </Menu>
 
@@ -358,7 +364,7 @@ function App(props) {
             contractConfig={contractConfig}
           />
           <Contract
-            name="MintSamples"
+            name="SampleNFT"
             price={price}
             signer={userSigner}
             provider={localProvider}
@@ -462,6 +468,62 @@ function App(props) {
             blockExplorer = {blockExplorer}
           />
         </Route>
+          <Route path="/setproofs">
+            <SetProofs
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              blockExplorer = {blockExplorer}
+            />
+          </Route>
+          <Route path="/viewproof/:proof_id">
+            <ViewProof
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              blockExplorer = {blockExplorer}
+            />
+          </Route>
+          <Route path="/editproof/:proof_id">
+            <EditProof
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              blockExplorer = {blockExplorer}
+            />
+          </Route>
+          <Route path="/burnproof/:proof_id">
+            <BurnProof
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              blockExplorer = {blockExplorer}
+            />
+          </Route>
       </Switch>
 
       <ThemeSwitch />

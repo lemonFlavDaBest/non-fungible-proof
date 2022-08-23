@@ -29,6 +29,7 @@ export default function Minter({
   const [nftCollection, setNFTCollection] = useState();
   const [originalTokenId, setOriginalTokenId] = useState();
   const balance = useContractReader(readContracts, "NFProof", "balanceOf", [address]);
+  
   const yourBalance = balance && balance.toNumber && balance.toNumber();
   const [transferToAddresses, setTransferToAddresses] = useState({});
   const [proofCollectibles, setProofCollectibles] = useState();

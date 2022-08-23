@@ -5,3 +5,8 @@ export { default as Subgraph } from "./Subgraph";
 export { default as Minter } from "./Minter";
 export { default as MintSamples } from "./MintSamples";
 export { default as Burner } from "./Burner";
+export { default as ViewProof } from "./ViewProof";
+export { default as SetProofs } from "./SetProofs";
+export { default as SearchProofs } from "./SearchProofs";
+export {default as EditProof} from  "./EditProof";
+export {default as BurnProof} from "./BurnProof";
