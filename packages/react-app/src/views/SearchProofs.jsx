@@ -1,16 +1,16 @@
 import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch } from "antd";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { utils } from "ethers";
 import { SyncOutlined } from "@ant-design/icons";
-
 import { Address, Balance, Events } from "../components";
 
 /*
-In this file I think I want to list someones proof tokens that they are set as a user on
-I think there is an ERC721 function in the Rounak Banik article on devcommunity for finding all of a users nfts.
+You search an nft and we will give you the owner and authorized proof users
+for example searching for cryptopunk 7, you get the owner of the proof token and authorized user
+To find this we need tokenToToken => use that token to get owner + user
 */
 
-export default function ViewProofs({
+export default function SearchProofs({
   purpose,
   address,
   mainnetProvider,
@@ -22,9 +22,6 @@ export default function ViewProofs({
   writeContracts,
 }) {
   const [newPurpose, setNewPurpose] = useState("loading...");
-  const [setNFTCollection, nftCollection] = useState();
-  const [setOriginalTokenId, originalTokenId] = useState();
-  const [setProofTokenId, proofTokenId] = useState();
 
   return (
     <div>
@@ -32,15 +29,10 @@ export default function ViewProofs({
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
       <div style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}>
-        <h2>Find A Proof Token</h2>
-        <h4>Search for an NFT and we will give you the Proof Token and User of it. </h4>
+        <h2>Example UI:</h2>
+        <h4>purpose: {purpose}</h4>
         <Divider />
         <div style={{ margin: 8 }}>
-          <Input
-            onChange={e => {
-              setNewPurpose(e.target.value);
-            }}
-          />
           <Input
             onChange={e => {
               setNewPurpose(e.target.value);

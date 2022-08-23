@@ -19,6 +19,13 @@ List of tokens:
 3 columns I think:  owner and the token, if current user and set user, what the token represents
 */
 
+/*
+<Result
+                            status= {validateObject && validateObject.isValid == true? "success" : "error"}
+                            title="Token Validation:"
+                          />
+*/
+
 
 export default function SetProofs({
   purpose,
@@ -42,12 +49,8 @@ export default function SetProofs({
   const [userTokens, setUserTokens] = useState()
   const [validateTokens, setValidateTokens] = useState()
   const [expiryTime, setExpiryTime] = useState()
+  const [ownerTokens, setOwnerTokens] = useState()
 
-  async function checkValidity (tokenId) {
-    const result = await readContracts.NFProof.isValidUserToken(tokenId);
-    console.log(result)
-    return result === true? true : false;
-  }
   useEffect(() => {
     //I want this function to get make an array of validation objects with corresponding tokenId and boolean validation
     const updateValidateTokens = async () => {
@@ -66,14 +69,19 @@ export default function SetProofs({
   useEffect(() => {
     const updateYourProofTokens = async () => {
       const proofTokensUpdate = [];
+      const ownerInfo = [];
       for (let tokenIndex = 0; tokenIndex < balance; tokenIndex++) {
         try {
           console.log("GEtting token index", tokenIndex);
           const tokenId = await readContracts.NFProof.tokenOfOwnerByIndex(address, tokenIndex);
           console.log("tokenId", tokenId);
+          const ownerObject = await readContracts.NFProof._owners(tokenId.toNumber())
+          
           try {
             proofTokensUpdate.push({id: tokenId, owner:address});
-            console.log("proofTokenUpdates:", proofTokensUpdate)
+            ownerInfo.push(ownerObject);
+            console.log("ownerInfo:", ownerInfo)
+            console.log("proofTokenUpdates:", proofTokensUpdate);
           } catch (e) {
             console.log(e);
           }
@@ -82,7 +90,10 @@ export default function SetProofs({
         }
       }
       console.log("proofTokenUpdatesFINAL:", proofTokensUpdate)
+      console.log("ownerInfoFinal:", ownerInfo)
       setYourProofTokens(proofTokensUpdate);
+      setOwnerTokens(ownerInfo);
+      
     };
     updateYourProofTokens();
   }, [address, yourBalance]);
@@ -144,36 +155,44 @@ export default function SetProofs({
   }*/
 
   return (
-    <div>
+    <div >
         <List
                 bordered
                 dataSource={yourProofTokens}
                 itemLayout="vertical"
-                //render item cannot be async
+                
                 renderItem={(item) => {
                   const proofTokensId = item.id.toNumber();
                   const userObject = userTokens.find(({proofTokenId}) => proofTokenId.toNumber() == proofTokensId );
+                  const ownerObject = ownerTokens.find(({proofTokenId}) => proofTokenId.toNumber() == proofTokensId );
                   const validateObject = validateTokens.find(({proofTokenId}) => proofTokenId.toNumber() == proofTokensId)
                   
                   return (
+                    <div >
                     <List.Item key={proofTokensId}>
-                      <div>
-                        <Row gutter={16}>
+                      
+                        <Row gutter={12}>
                           <Col span={8}>
                           <Card
                               title={
                                 <div>
-                                  <span style={{ fontSize: 16, marginRight: 8 }}>#{proofTokensId}</span>
+                                  <span style={{ fontSize: 16, marginRight: 8 }}>Token</span>
                                 </div>
                               }
+                              bordered = {false}
                             >
-                              <div>{proofTokensId}</div>
-                              Your Contract Address:
-                                <Address
-                                  address={readContracts && readContracts.NFProof ? readContracts.NFProof.address : null}
-                                  ensProvider={mainnetProvider}
-                                  fontSize={16}
+                              <h3>POOT #{proofTokensId}</h3>
+                              
+                              <p>Proof of Ownership of Token ID: {ownerObject && ownerObject.originalTokenId ? ownerObject.originalTokenId.toNumber() : null}</p>
+
+                              From Contract: 
+                              <Address 
+                                address = {ownerObject && ownerObject.originalContract ? ownerObject.originalContract : null}
+                                ensProvider={mainnetProvider}
+                                fontSize={16}
                                 />
+                              
+
                         
                           </Card>
                           </Col>
@@ -181,64 +200,36 @@ export default function SetProofs({
                           <Card
                         title={
                           <div>
-                            <span style={{ fontSize: 16, marginRight: 8 }}>User:</span>
+                            <span style={{ fontSize: 16, marginRight: 8 }}>User Info</span>
                           </div>
                         }
+                        bordered = {false}
                       >
-                        <div>{proofTokensId}</div>
-                        Your Contract Address:
                           <Address
                             address={userObject && userObject.user > 0 ? userObject.user : null}
                             ensProvider={mainnetProvider}
                             fontSize={16}
                           />
-                          <Result
-                            status= {validateObject && validateObject.isValid == true? "success" : "error"}
-                            title="Token Validation:"
-                          />
+                          
                       </Card>
                           </Col>
+                          
                           <Col span={8}>
-                            <Card title="Owner" bordered={true}>
-                
-                        <Address
-                          address={item.owner}
-                          ensProvider={mainnetProvider}
-                          blockExplorer={blockExplorer}
-                          fontSize={16}
-                        />
-                        <AddressInput
-                          ensProvider={mainnetProvider}
-                          placeholder="Set Proof of Ownersip to address"
-                          value={ownershipToAddresses[proofTokensId]}
-                          onChange={newValue => {
-                            const update = {};
-                            update[proofTokensId] = newValue;
-                            setOwnershipToAddresses({ ...ownershipToAddresses, ...update });
-                          }}
-                        />
-                        When do you want this to expire?
-                        <DatePicker
-                          style={{
-                            width: '50%',
-                          }}
-                          onChange ={onDateChange}
-                        />
-                        <Button
-                          onClick={() => {
-                            console.log("writeContracts", writeContracts);
-                            tx(writeContracts.NFProof.setUser(proofTokensId,  ownershipToAddresses[proofTokensId], expiryTime));
-                          }}
-                        >
-                          Set as Proof of Ownership
-                        </Button>
-                      
-                            </Card>
+                          <Card
+                              title = "Token Validation"
+                              bordered = {false}
+                            >
+                            <Result
+                            
+                            status= {validateObject && validateObject.isValid == true? "success" : "error"}
+                          />
+                          </Card>
                           </Col>
                         </Row>
-                        </div>
+                        
                       
                     </List.Item>
+                    </div>
                   );
                 }}
               />
