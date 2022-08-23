@@ -25,7 +25,7 @@ contract TheBurn is Ownable {
       nfProof.burn(originContractAddress, originTokenId, proofTokenId);
     }
 
-  function burnWithdraw() public onlyOwner {
+    function burnWithdraw() public onlyOwner {
       address owner = msg.sender;
       (bool succ, )= owner.call{value:address(this).balance}("");
       require(succ, "withdraw failed");
