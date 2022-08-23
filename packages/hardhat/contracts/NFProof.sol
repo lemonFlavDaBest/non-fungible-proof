@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 //import "./IERC4907.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 
 
 interface IERC4907 {
@@ -37,7 +38,7 @@ interface IERC4907 {
     
 }
 
-contract NFProof is IERC4907, IERC721, ERC721Burnable, ERC721Enumerable, Ownable {
+contract NFProof is IERC4907, IERC721, IERC721Metadata, ERC721Burnable, ERC721Enumerable, Ownable {
     
     struct UserInfo 
     {
@@ -61,8 +62,6 @@ contract NFProof is IERC4907, IERC721, ERC721Burnable, ERC721Enumerable, Ownable
     uint256 public mintPrice;
     bool private initVar;
     address public burnerAddress;
-    string public nfpBaseURI;
-    string public nfpURI;
 
     event Mint(uint256 tokenId, address minter);
     event Burn(uint256 tokenId);
@@ -88,18 +87,11 @@ contract NFProof is IERC4907, IERC721, ERC721Burnable, ERC721Enumerable, Ownable
         mintPrice = newPrice;
     }
 
-    function setNFPBaseURI(string calldata newBaseURI) public onlyOwner {
-        nfpBaseURI = newBaseURI;
-    }
-
-    function setNFPURI(string calldata newURI) public onlyOwner {
-        nfpURI = newURI;
-    }
-
+    /* Don't think we need this  function
     function getUserFromOriginalToken(address originContractAddress, uint256 originTokenId) public view returns(address proofUser) {
         uint256 findToken = tokenToToken[originContractAddress][originTokenId];
         return userOf(findToken);
-    }
+    }*/
 
     function isValidUserToken(uint256 tokenId) public view returns (bool) {
         if( uint256(_users[tokenId].expires) >=  block.timestamp){
@@ -108,6 +100,20 @@ contract NFProof is IERC4907, IERC721, ERC721Burnable, ERC721Enumerable, Ownable
             return true;
         }
         return false;
+    }
+
+    function isValidOwner(uint256 tokenId) public view returns(bool) {
+        OwnerInfo memory verifyOwner = _owners[tokenId];
+        require(IERC721(verifyOwner.originalContract).ownerOf(tokenId) == verifyOwner.owner, "This item has been sold and transferred");
+        return true;
+    }
+
+    //validate a user so that other contracts may use this in their own smart contracts
+    function validateTokenToTokenUser(address originContract, uint256 originTokenId, address verifyUser) public view returns (bool){
+        uint256 proofToken = tokenToToken[originContract][originTokenId];
+        require(verifyUser == userOf(proofToken), "These are not the same address");
+        require(isValidOwner(proofToken), "This is not the valid owner of this NFT");
+        return true;
     }
 
     function init(address newBurnerAddress) public onlyOwner {
@@ -202,7 +208,7 @@ contract NFProof is IERC4907, IERC721, ERC721Burnable, ERC721Enumerable, Ownable
     }
 
     function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external payable virtual {
-        require(msg.sender == burnerAddress, "this aint authorized");
+        require(msg.sender == burnerAddress, "only the burner contract may call this function");
         require(tokenToToken[originContractAddress][originTokenId] == proofTokenId, "these do not represent the same token");
         delete _users[proofTokenId];
         delete _owners[proofTokenId];
@@ -214,15 +220,12 @@ contract NFProof is IERC4907, IERC721, ERC721Burnable, ERC721Enumerable, Ownable
         emit Burn(proofTokenId);
     }
 
-   /*function tokensOfOwner(address _owner) external view returns (uint[] memory) {
-        uint tokenCount = balanceOf(_owner);
-        uint[] memory tokensId = new uint256[](tokenCount);
-
-        for (uint i = 0; i < tokenCount; i++) {
-            tokensId[i] = tokenOfOwnerByIndex(_owner, i);
-        }
-        return tokensId;
-    }*/
+        /**
+        * @dev See {IERC721Metadata-tokenURI}.
+        */
+    function tokenURI(uint256 tokenId) public view virtual override(ERC721, IERC721Metadata) returns (string memory) {
+        return IERC721Metadata(_owners[tokenId].originalContract).tokenURI(_owners[tokenId].originalTokenId);
+    }
 
     function mintWithdraw() public onlyOwner {
         address owner = msg.sender;
@@ -250,5 +253,4 @@ contract NFProof is IERC4907, IERC721, ERC721Burnable, ERC721Enumerable, Ownable
 
     receive() external payable {}
     fallback() external payable {}
-
 } 
