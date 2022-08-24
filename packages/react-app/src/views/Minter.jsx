@@ -10,8 +10,7 @@ import {
   useOnBlock,
   useUserProviderAndSigner,
 } from "eth-hooks";
-
-
+import { Link, Route, useLocation } from "react-router-dom";
 import { Address, Balance, Events, AddressInput } from "../components";
 
 export default function Minter({
@@ -143,7 +142,8 @@ export default function Minter({
                           </div>
                         }
                       >
-                        <div>{id}</div>
+                        <Link to = {`/viewproof/${id}`}>View Token</Link>
+                        <br></br>
                         Your Contract Address:
                           <Address
                             address={readContracts && readContracts.NFProof ? readContracts.NFProof.address : null}
