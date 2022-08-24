@@ -337,7 +337,7 @@ function App(props) {
             */}
 
           <Contract
-            name="YourContract"
+            name="ApeSample"
             price={price}
             signer={userSigner}
             provider={localProvider}
@@ -372,6 +372,7 @@ function App(props) {
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
           />
+          
         </Route>
         <Route path="/hints">
           <Hints
