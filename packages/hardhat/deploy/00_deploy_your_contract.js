@@ -26,10 +26,24 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const IERC4907 = await ethers.getContract("IERC4907", deployer);
   console.log("DEPLOYED1");
   */
+  await deploy("ApeSample", {
+    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+    from: deployer,
+    log: true,
+    waitConfirmations: 5,
+  });
 
+  const apeSample = await ethers.getContract("ApeSample", deployer);
+  await apeSample.transfer(
+    "0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4",
+    "" + 100 * 10 ** 18
+  );
+
+  
   await deploy("NFProof", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
+    args:[apeSample.address],
     log: true,
     waitConfirmations: 5,
   });
