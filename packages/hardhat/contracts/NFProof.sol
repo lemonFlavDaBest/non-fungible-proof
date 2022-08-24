@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 //import "./IERC4907.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
 interface IERC4907 {
@@ -38,7 +39,7 @@ interface IERC4907 {
     
 }
 
-contract NFProof is IERC4907, IERC721, IERC721Metadata, ERC721Burnable, ERC721Enumerable, Ownable {
+contract NFProof is IERC4907, IERC721Metadata, ERC721Burnable, ERC721Enumerable, Ownable {
     
     struct UserInfo 
     {
@@ -62,6 +63,8 @@ contract NFProof is IERC4907, IERC721, IERC721Metadata, ERC721Burnable, ERC721En
     uint256 public mintPrice;
     bool private initVar;
     address public burnerAddress;
+    IERC20 token; //instantiates the imported contract
+    uint256 public ercMintPrice;
 
     event Mint(uint256 tokenId, address minter);
     event Burn(uint256 tokenId);
@@ -77,10 +80,11 @@ contract NFProof is IERC4907, IERC721, IERC721Metadata, ERC721Burnable, ERC721En
     mapping(uint256 => bool) private tokenIsBurning;
 
 
-    constructor()
-     ERC721("NonFungibleProof","NFP"){
+    constructor(address token_addr) ERC721("NonFungibleProof","NFP"){
         mintPrice = 10000000000000000; //.01 ether
         initVar=true;
+        token = IERC20(token_addr);
+        ercMintPrice = 1 ether;
      }
 
     function setMintPrice(uint256 newPrice) public onlyOwner {
@@ -106,6 +110,16 @@ contract NFProof is IERC4907, IERC721, IERC721Metadata, ERC721Burnable, ERC721En
         OwnerInfo memory verifyOwner = _owners[tokenId];
         require(IERC721(verifyOwner.originalContract).ownerOf(tokenId) == verifyOwner.owner, "This item has been sold and transferred");
         return true;
+    }
+
+    function payWithApe(uint256 tokenInput, address originContractAddress, uint256[] memory originTokenIds) public {
+        uint256 totalPrice = ercMintPrice*originTokenIds.length;
+        require(tokenInput >=totalPrice, "you didn't pay enough for all of these mints");
+        for (uint i = 0; i < originTokenIds.length; i++) {
+            require(!tokenHasMinted[originContractAddress][originTokenIds[i]], "token already minted");
+            require(!tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]], "token already paid for");
+            tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]] = true;
+        }
     }
 
     //validate a user so that other contracts may use this in their own smart contracts
