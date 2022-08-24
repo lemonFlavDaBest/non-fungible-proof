@@ -94,15 +94,15 @@ export default function ViewProof({
                 <br></br>
               Token Id: {ownerAddress && ownerAddress ? ownerObject.originalTokenId.toNumber() : null}
               <br></br>
-            View on Etherscan
+              <a href={`https://etherscan.io/token/`}>View on Etherscan</a>
             </Card>
         </Col>
         <Col span={8}>
           <Card title="Owner Actions:" bordered={false}>
-            Edit Owners
+            <Link to={`/editproof/${proof_id}`}>Edit Owner</Link>
             <br></br>
             <br></br>
-            Burn NFT
+            <Link to={`/burnproof/${proof_id}`}>Burn NFT</Link>
           </Card>
         </Col>
       </Row>
