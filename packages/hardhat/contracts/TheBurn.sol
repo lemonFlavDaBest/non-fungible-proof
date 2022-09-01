@@ -10,7 +10,7 @@ contract TheBurn is Ownable {
     NFProof public nfProof;
 
     constructor(address payable proofContract) {
-      burnPrice = 1000000000000000; //.001 ether
+      burnPrice = 10000000000000; //.00001 ether
       nfProof = NFProof(proofContract);
     }
 
@@ -19,7 +19,7 @@ contract TheBurn is Ownable {
     }
 
     //virtual override and function name just burn
-    function burner(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) public payable {
+    function burner(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) public payable virtual {
       require(msg.value>=burnPrice, "you didnt pay enough to the burn troll");
       require(IERC721(originContractAddress).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
       nfProof.burn(originContractAddress, originTokenId, proofTokenId);
