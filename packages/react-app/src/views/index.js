@@ -10,3 +10,5 @@ export { default as SetProofs } from "./SetProofs";
 export { default as SearchProofs } from "./SearchProofs";
 export {default as EditProof} from  "./EditProof";
 export {default as BurnProof} from "./BurnProof";
+export {default as NFPMinter} from "./NFPMinter";
+export {default as YourCollectibles} from  "./YourCollectibles";
