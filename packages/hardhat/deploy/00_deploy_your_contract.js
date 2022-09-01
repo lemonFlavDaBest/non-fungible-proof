@@ -34,11 +34,33 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   });
 
   const apeSample = await ethers.getContract("ApeSample", deployer);
+
   await apeSample.transfer(
     "0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4",
     "" + 100 * 10 ** 18
   );
 
+  await deploy("Monkey", {
+    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+    from: deployer,
+    log: true,
+    waitConfirmations: 5,
+  });
+
+  const monkey = await ethers.getContract("Monkey", deployer);
+
+  await monkey.transfer(
+    "0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4",
+    "" + 100 * 10 ** 18
+  );
+
+  console.log('ERC20S DEPLOYED')
+  await deploy("YourCollectible", {
+    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+    from: deployer,
+    log: true,
+    waitConfirmations: 5,
+  });
   
   await deploy("NFProof", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
@@ -50,6 +72,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
   console.log("DEPLOYED2");
   const nfProof = await ethers.getContract("NFProof", deployer);
+  
 
   // paste in your front-end address here to get 10 balloons on deploy:
   /*await balloons.transfer(
@@ -80,7 +103,8 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   console.log("DEPLOYED4");
 
   //theBurn.transferOwnership(YOUR_ADDRESS_HERE);
-  //nfProof.transferOwnership(YOUR_ADDRESS_HERE);
+  nfProof.transferOwnership("0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4");
+
   await deploy("SampleNFT", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
@@ -89,4 +113,4 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     waitConfirmations: 5,
   });
 };
-module.exports.tags = ["SampleNFT", "NFProof", "TheBurn"];
+module.exports.tags = ["SampleNFT", "NFProof", "TheBurn", "Monkey", "ApeSample"];
