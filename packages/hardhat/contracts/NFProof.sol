@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -38,8 +37,9 @@ interface IERC4907 {
     function userExpires(uint256 tokenId) external view returns(uint256);
     
 }
-
-contract NFProof is IERC4907, IERC721Metadata, ERC721Burnable, ERC721Enumerable, Ownable {
+//think i need a withdrawal erc20 contract
+//make sure my identifiers and visibilities are correct.
+contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     
     struct UserInfo 
     {
@@ -91,12 +91,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Burnable, ERC721Enumerable,
         mintPrice = newPrice;
     }
 
-    /* Don't think we need this  function
-    function getUserFromOriginalToken(address originContractAddress, uint256 originTokenId) public view returns(address proofUser) {
-        uint256 findToken = tokenToToken[originContractAddress][originTokenId];
-        return userOf(findToken);
-    }*/
-
     function isValidUserToken(uint256 tokenId) public view returns (bool) {
         if( uint256(_users[tokenId].expires) >=  block.timestamp){
             OwnerInfo memory verifyOwner = _owners[tokenId];
@@ -106,15 +100,25 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Burnable, ERC721Enumerable,
         return false;
     }
 
+    function setToken(address new_token_addr) public onlyOwner{
+        token = IERC20(new_token_addr);
+    }
+
+    function setTokenMintPrice(uint256 newPrice) public onlyOwner {
+        ercMintPrice = newPrice;
+    }
+
     function isValidOwner(uint256 tokenId) public view returns(bool) {
         OwnerInfo memory verifyOwner = _owners[tokenId];
         require(IERC721(verifyOwner.originalContract).ownerOf(tokenId) == verifyOwner.owner, "This item has been sold and transferred");
         return true;
     }
-
-    function payWithApe(uint256 tokenInput, address originContractAddress, uint256[] memory originTokenIds) public {
+    
+    function payWithERC(uint256 tokenInput, address originContractAddress, uint256[] memory originTokenIds) external {
         uint256 totalPrice = ercMintPrice*originTokenIds.length;
         require(tokenInput >=totalPrice, "you didn't pay enough for all of these mints");
+        (bool tranSucc) = token.transferFrom(msg.sender, address(this), tokenInput);
+        require(tranSucc, "transfer failed");
         for (uint i = 0; i < originTokenIds.length; i++) {
             require(!tokenHasMinted[originContractAddress][originTokenIds[i]], "token already minted");
             require(!tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]], "token already paid for");
@@ -123,7 +127,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Burnable, ERC721Enumerable,
     }
 
     //validate a user so that other contracts may use this in their own smart contracts
-    function validateTokenToTokenUser(address originContract, uint256 originTokenId, address verifyUser) public view returns (bool){
+    function validateOwnerUser(address originContract, uint256 originTokenId, address verifyUser) public view returns (bool){
         uint256 proofToken = tokenToToken[originContract][originTokenId];
         require(verifyUser == userOf(proofToken), "These are not the same address");
         require(isValidOwner(proofToken), "This is not the valid owner of this NFT");
@@ -175,12 +179,13 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Burnable, ERC721Enumerable,
     }
 
     /// @dev See {IERC165-supportsInterface}.
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable, IERC165) returns (bool) {
+    //Erc721
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Enumerable, IERC165) returns (bool) {
         return interfaceId == type(IERC4907).interfaceId || super.supportsInterface(interfaceId);
     }
 
     //bulk pay an array of tokens
-    function payForTokens(address originContractAddress, uint256[] memory originTokenIds) public payable {
+    function payForMints(address originContractAddress, uint256[] memory originTokenIds) public payable {
         uint256 totalPrice = mintPrice*originTokenIds.length;
         require(msg.value >=totalPrice, "you didn't pay enough for all of these mints");
         for (uint i = 0; i < originTokenIds.length; i++) {
@@ -196,6 +201,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Burnable, ERC721Enumerable,
         require(msg.value>=mintPrice || tokenHasBeenPaidfor[originContractAddress][originTokenId] == true, "you didnt pay enough to the mint troll");
         require(IERC721(originContractAddress).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
         require(!tokenHasMinted[originContractAddress][originTokenId], "token already minted");
+        require(originContractAddress != address(this), "cannot mint proof of a proof");
         _tokenIdCounter.increment();
         uint256 tokenId = _tokenIdCounter.current();
         tokenIsMinting[tokenId] = true;
@@ -221,7 +227,8 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Burnable, ERC721Enumerable,
         revert("No messing with approvals, sorry");
     }
 
-    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external payable virtual {
+
+    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external virtual  {
         require(msg.sender == burnerAddress, "only the burner contract may call this function");
         require(tokenToToken[originContractAddress][originTokenId] == proofTokenId, "these do not represent the same token");
         delete _users[proofTokenId];
@@ -247,12 +254,16 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Burnable, ERC721Enumerable,
         require(succ, "withdraw failed");
     }
 
-    
+    function ercWithdraw() public onlyOwner returns (uint256 tokenAmount) {
+        require(token.transfer(msg.sender, token.balanceOf(address(this))));
+        return (token.balanceOf(address(this)));
+    }
+ 
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual override(ERC721, ERC721Enumerable){
+    ) internal virtual override(ERC721Enumerable){
         super._beforeTokenTransfer(from, to, tokenId);
         if (
             from != to &&
@@ -262,6 +273,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Burnable, ERC721Enumerable,
             delete _users[tokenId];
             emit UpdateUser(tokenId, address(0), 0);
         }
+        //transfers only allowed when the token is either minting or burning.  sugoi
         require(tokenIsMinting[tokenId] || to == address(0) && tokenIsBurning[tokenId], "Not allowed to transfer token"); //only require transfer while burning and minting
     }
 
