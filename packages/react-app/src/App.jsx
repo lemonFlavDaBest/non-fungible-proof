@@ -1,4 +1,4 @@
-import { Button, Col, Menu, Row } from "antd";
+import { Button, Col, Menu, Row, Divider, Layout } from "antd";
 import "antd/dist/antd.css";
 import {
   useBalance,
@@ -29,7 +29,7 @@ import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { Home, ExampleUI, Hints, Subgraph, Minter, MintSamples, Burner, ViewProof, SetProofs, EditProof, BurnProof } from "./views";
+import { Home, ExampleUI, Hints, Subgraph, Minter, MintSamples, Burner, ViewProof, SetProofs, EditProof, BurnProof, NFPMinter, YourCollectibles } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 
 const { ethers } = require("ethers");
@@ -294,15 +294,6 @@ function App(props) {
         <Menu.Item key="/debug">
           <Link to="/debug">Debug Contracts</Link>
         </Menu.Item>
-        <Menu.Item key="/hints">
-          <Link to="/hints">Hints</Link>
-        </Menu.Item>
-        <Menu.Item key="/exampleui">
-          <Link to="/exampleui">ExampleUI</Link>
-        </Menu.Item>
-        <Menu.Item key="/mainnetdai">
-          <Link to="/mainnetdai">Mainnet DAI</Link>
-        </Menu.Item>
         <Menu.Item key="/subgraph">
           <Link to="/subgraph">Subgraph</Link>
         </Menu.Item>
@@ -314,9 +305,6 @@ function App(props) {
         </Menu.Item>
         <Menu.Item key="/burner">
           <Link to="/burner">Burner</Link>
-        </Menu.Item>
-        <Menu.Item key="/findproofs">
-          <Link to="/findproofs">Find Proofs</Link>
         </Menu.Item>
         <Menu.Item key="/setproofs">
           <Link to="/setproofs">Set Proofs</Link>
@@ -346,6 +334,15 @@ function App(props) {
             contractConfig={contractConfig}
           />
           <Contract
+            name="Monkey"
+            price={price}
+            signer={userSigner}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+            contractConfig={contractConfig}
+          />
+          <Contract
             name="NFProof"
             price={price}
             signer={userSigner}
@@ -365,6 +362,15 @@ function App(props) {
           />
           <Contract
             name="SampleNFT"
+            price={price}
+            signer={userSigner}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+            contractConfig={contractConfig}
+          />
+          <Contract
+            name="YourCollectibles"
             price={price}
             signer={userSigner}
             provider={localProvider}
@@ -525,12 +531,42 @@ function App(props) {
               blockExplorer = {blockExplorer}
             />
           </Route>
+          <Route path="/nfpminter">
+            <NFPMinter
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              blockExplorer = {blockExplorer}
+            />
+          </Route>
+          <Route path="/yourcollectibles">
+            <YourCollectibles
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              blockExplorer = {blockExplorer}
+            />
+          </Route>
       </Switch>
+
+      <Divider />
 
       <ThemeSwitch />
 
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
+      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 0, padding: 1 }}>
         <Row align="middle" gutter={[4, 4]}>
           <Col span={8}>
             <Ramp price={price} address={address} networks={NETWORKS} />
@@ -554,7 +590,7 @@ function App(props) {
             </Button>
           </Col>
         </Row>
-
+      
         <Row align="middle" gutter={[4, 4]}>
           <Col span={24}>
             {
