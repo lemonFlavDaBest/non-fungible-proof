@@ -55,6 +55,8 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   );
 
   console.log('ERC20S DEPLOYED')
+
+  //We probably dont want to deploy this to goerli 
   await deploy("YourCollectible", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
