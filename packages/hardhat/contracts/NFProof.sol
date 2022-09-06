@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-//import "./IERC4907.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -110,7 +109,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
 
     function isValidOwner(uint256 tokenId) public view returns(bool) {
         OwnerInfo memory verifyOwner = _owners[tokenId];
-        require(IERC721(verifyOwner.originalContract).ownerOf(tokenId) == verifyOwner.owner, "This item has been sold and transferred");
+        require(IERC721(verifyOwner.originalContract).ownerOf(tokenId) == verifyOwner.owner, "This item has been sold and/or transferred");
         return true;
     }
     
@@ -122,6 +121,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         for (uint i = 0; i < originTokenIds.length; i++) {
             require(!tokenHasMinted[originContractAddress][originTokenIds[i]], "token already minted");
             require(!tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]], "token already paid for");
+            require(IERC721(originContractAddress).ownerOf(originTokenIds[i]) != address(0), "This token doesn't exist");
             tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]] = true;
         }
     }
@@ -191,12 +191,13 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         for (uint i = 0; i < originTokenIds.length; i++) {
             require(!tokenHasMinted[originContractAddress][originTokenIds[i]], "token already minted");
             require(!tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]], "token already paid for");
+            require(IERC721(originContractAddress).ownerOf(originTokenIds[i]) != address(0), "This token doesn't exist");
             tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]] = true;
         }
     }
 
     //this willl mint one nft. checks in order 1) if you paid enough for mint 2) if you are the owner of the nft
-    //3) check to see if that token has already been minted. update the owner info in storage.
+    //3) check to see if that token has already been minted. 4) make sure your not minting proof of itself. 5. update the owner info in storage.
     function safeMint(address originContractAddress, uint256 originTokenId) public payable returns (uint256){
         require(msg.value>=mintPrice || tokenHasBeenPaidfor[originContractAddress][originTokenId] == true, "you didnt pay enough to the mint troll");
         require(IERC721(originContractAddress).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
@@ -274,7 +275,8 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
             emit UpdateUser(tokenId, address(0), 0);
         }
         //transfers only allowed when the token is either minting or burning.  sugoi
-        require(tokenIsMinting[tokenId] || to == address(0) && tokenIsBurning[tokenId], "Not allowed to transfer token"); //only require transfer while burning and minting
+        //we made to == msg.sender because it is a minting function
+        require(tokenIsMinting[tokenId] && to == msg.sender || to == address(0) && tokenIsBurning[tokenId], "Not allowed to transfer token"); //only require transfer while burning and minting
     }
 
     receive() external payable {}
