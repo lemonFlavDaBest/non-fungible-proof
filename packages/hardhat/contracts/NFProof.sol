@@ -86,11 +86,11 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         ercMintPrice = 1 ether;
      }
 
-    function setMintPrice(uint256 newPrice) public onlyOwner {
+    function setMintPrice(uint256 newPrice) external onlyOwner {
         mintPrice = newPrice;
     }
 
-    function isValidUserToken(uint256 tokenId) public view returns (bool) {
+    function isValidUserToken(uint256 tokenId) external view returns (bool) {
         if( uint256(_users[tokenId].expires) >=  block.timestamp){
             OwnerInfo memory verifyOwner = _owners[tokenId];
             require(IERC721(verifyOwner.originalContract).ownerOf(tokenId) == verifyOwner.owner, "This item has been sold and transferred");
@@ -99,11 +99,11 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         return false;
     }
 
-    function setToken(address new_token_addr) public onlyOwner{
+    function setToken(address new_token_addr) external onlyOwner{
         token = IERC20(new_token_addr);
     }
 
-    function setTokenMintPrice(uint256 newPrice) public onlyOwner {
+    function setTokenMintPrice(uint256 newPrice) external onlyOwner {
         ercMintPrice = newPrice;
     }
 
@@ -126,7 +126,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         }
     }
 
-    function validateOwnerUser(address originContract, uint256 originTokenId, address verifyUser) public view returns (bool){
+    function validateOwnerUser(address originContract, uint256 originTokenId, address verifyUser) external view returns (bool){
         uint256 proofToken = tokenToToken[originContract][originTokenId];
         require(verifyUser == userOf(proofToken), "These are not the same address");
         require(isValidOwner(proofToken), "This is not the valid owner of this NFT");
@@ -184,7 +184,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     //bulk pay an array of tokens
-    function payForMints(address originContractAddress, uint256[] memory originTokenIds) public payable {
+    function payForMints(address originContractAddress, uint256[] memory originTokenIds) external payable {
         uint256 totalPrice = mintPrice*originTokenIds.length;
         require(msg.value >=totalPrice, "you didn't pay enough for all of these mints");
         for (uint i = 0; i < originTokenIds.length; i++) {
@@ -228,7 +228,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
 
-    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external virtual  {
+    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external virtual {
         require(msg.sender == burnerAddress, "only the burner contract may call this function");
         require(tokenToToken[originContractAddress][originTokenId] == proofTokenId, "these do not represent the same token");
         delete _users[proofTokenId];
@@ -248,13 +248,13 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         return IERC721Metadata(_owners[tokenId].originalContract).tokenURI(_owners[tokenId].originalTokenId);
     }
 
-    function mintWithdraw() public onlyOwner {
+    function mintWithdraw() external onlyOwner {
         address owner = msg.sender;
         (bool succ, )= owner.call{value:address(this).balance}("");
         require(succ, "withdraw failed");
     }
 
-    function ercWithdraw() public onlyOwner returns (uint256 tokenAmount) {
+    function ercWithdraw() external onlyOwner returns (uint256 tokenAmount) {
         require(token.transfer(msg.sender, token.balanceOf(address(this))));
         return (token.balanceOf(address(this)));
     }
