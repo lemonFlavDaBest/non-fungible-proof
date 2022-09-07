@@ -36,8 +36,8 @@ interface IERC4907 {
     function userExpires(uint256 tokenId) external view returns(uint256);
     
 }
-//think i need a withdrawal erc20 contract
-//make sure my identifiers and visibilities are correct.
+
+
 contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     
     struct UserInfo 
@@ -126,7 +126,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         }
     }
 
-    //validate a user so that other contracts may use this in their own smart contracts
     function validateOwnerUser(address originContract, uint256 originTokenId, address verifyUser) public view returns (bool){
         uint256 proofToken = tokenToToken[originContract][originTokenId];
         require(verifyUser == userOf(proofToken), "These are not the same address");
