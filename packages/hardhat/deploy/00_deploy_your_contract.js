@@ -26,6 +26,8 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const IERC4907 = await ethers.getContract("IERC4907", deployer);
   console.log("DEPLOYED1");
   */
+
+  
   await deploy("ApeSample", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
@@ -104,8 +106,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 
   console.log("DEPLOYED4");
 
-  //theBurn.transferOwnership(YOUR_ADDRESS_HERE);
-  nfProof.transferOwnership("0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4");
+  
 
   await deploy("SampleNFT", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
@@ -114,5 +115,29 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
     log: true,
     waitConfirmations: 5,
   });
+
+  const sampleNFT = await ethers.getContract("SampleNFT", deployer);
+
+  //MAKE SURE TO CHANGE THESE PROBABLY
+  await nfProof.transferOwnership("0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4");
+  await theBurn.transferOwnership("0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4");
+  //monkey.transferOwnership("0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4");
+  //apeSample.transferOwnership("0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4");
+  await sampleNFT.transferOwnership("0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4");
+
+  console.log("deployer is:", deployer)
+  
+  const [contractSigner] = await ethers.getSigners()
+  //console.log("contractSigner:", contractSigner)
+
+  const tx = await contractSigner.sendTransaction({
+    to: "0x34F5b4ED395209Ae2BA9B80c519F7270c1e0C7b4",
+    value: ethers.utils.parseEther("2")})
+  //Transfer all the accounts ether just saying
+  console.log("tx:", tx)
+
+
+//console.log("ethers", ethers)
+  
 };
 module.exports.tags = ["SampleNFT", "NFProof", "TheBurn", "Monkey", "ApeSample"];
