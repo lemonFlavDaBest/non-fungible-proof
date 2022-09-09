@@ -67,6 +67,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
 
     event Mint(uint256 tokenId, address minter);
     event Burn(uint256 tokenId);
+    
 
 
 
@@ -273,9 +274,8 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
             delete _users[tokenId];
             emit UpdateUser(tokenId, address(0), 0);
         }
-        //transfers only allowed when the token is either minting or burning.  sugoi
-        //we made to == msg.sender because it is a minting function
-        require(tokenIsMinting[tokenId] && to == msg.sender || to == address(0) && tokenIsBurning[tokenId], "Not allowed to transfer token"); //only require transfer while burning and minting
+        //transfers only allowed when the token is either minting or burning.  
+        require(tokenIsMinting[tokenId] && from == address(0) || to == address(0) && tokenIsBurning[tokenId], "Not allowed to transfer token"); //only require transfer while burning and minting
     }
 
     receive() external payable {}
