@@ -26,7 +26,8 @@ export default function NFPMinter({
   const [yourToken, setYourToken] = useState()
 
   const getMetadata = async() => {
-    const baseURL = `https://eth-mainnet.alchemyapi.io/nft/v2/${process.env.REACT_APP_GOERLI_ALCHEMY_KEY}/getNFTMetadata`;
+    //need to switch this for mainnet prod
+    const baseURL = `https://eth-goerli.g.alchemy.com/nft/v2/${process.env.REACT_APP_GOERLI_ALCHEMY_KEY}/getNFTMetadata`;
     const tokenType = "erc721";
     var config = {
         method: 'get',
@@ -40,7 +41,7 @@ export default function NFPMinter({
     } catch(e) {
         console.log(e)
     }
-    }
+}
 
   const handleSearch = async() => {
     const tokenUpdate = [];
