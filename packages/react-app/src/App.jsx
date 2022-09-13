@@ -53,7 +53,7 @@ const { ethers } = require("ethers");
 */
 
 /// 📡 What chain are your contracts deployed to?
-const initialNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const initialNetwork = NETWORKS.goerli; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
@@ -81,6 +81,7 @@ function App(props) {
   const location = useLocation();
 
   const targetNetwork = NETWORKS[selectedNetwork];
+  console.log("initial network:", initialNetwork)
 
   // 🔭 block explorer URL
   const blockExplorer = targetNetwork.blockExplorer;
@@ -328,15 +329,7 @@ function App(props) {
             name="ApeSample"
             price={price}
             signer={userSigner}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-          />
-          <Contract
-            name="Monkey"
-            price={price}
-            signer={userSigner}
+            mainnetProvider={mainnetProvider}
             provider={localProvider}
             address={address}
             blockExplorer={blockExplorer}
@@ -346,6 +339,7 @@ function App(props) {
             name="NFProof"
             price={price}
             signer={userSigner}
+            mainnetProvider={mainnetProvider}
             provider={localProvider}
             address={address}
             blockExplorer={blockExplorer}
@@ -355,6 +349,7 @@ function App(props) {
             name="TheBurn"
             price={price}
             signer={userSigner}
+            mainnetProvider={mainnetProvider}
             provider={localProvider}
             address={address}
             blockExplorer={blockExplorer}
@@ -364,15 +359,7 @@ function App(props) {
             name="SampleNFT"
             price={price}
             signer={userSigner}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-          />
-          <Contract
-            name="YourCollectibles"
-            price={price}
-            signer={userSigner}
+            mainnetProvider={mainnetProvider}
             provider={localProvider}
             address={address}
             blockExplorer={blockExplorer}
@@ -443,7 +430,6 @@ function App(props) {
             tx={tx}
             writeContracts={writeContracts}
             readContracts={readContracts}
-            purpose={purpose}
             blockExplorer = {blockExplorer}
           />
         </Route>
