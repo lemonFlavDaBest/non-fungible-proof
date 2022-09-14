@@ -12,20 +12,6 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
-  await deploy("SampleNFT", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
-    from: deployer,
-    log: true,
-  });
-
-  sleep(5000)
-
-  const sampleNFT = await ethers.getContract("SampleNFT", deployer);
-  sleep(5000)
-  const sampleOwnership = await sampleNFT.transferOwnership("0x13D029DbB5fc28A9D9450B18442879FDb87E901e");
-  const sampleResult = await sampleOwnership.wait()
-  console.log(sampleResult)
-
 
   console.log("deployer is:", deployer)
   /*
@@ -42,4 +28,4 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 //console.log("ethers", ethers)
   
 };
-module.exports.tags = ["SampleNFT", "NFProof", "TheBurn",];
+module.exports.tags = ["SampleNFT", "NFProof", "TheBurn"];
