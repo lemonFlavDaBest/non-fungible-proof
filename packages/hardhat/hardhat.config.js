@@ -27,6 +27,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //
 // Select the network you want to deploy to here:
 //
+//15 eth on ropsten
 const defaultNetwork = "goerli";
 
 const mainnetGwei = 21;
