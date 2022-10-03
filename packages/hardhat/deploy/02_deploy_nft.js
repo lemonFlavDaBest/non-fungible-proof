@@ -28,4 +28,4 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 //console.log("ethers", ethers)
   
 };
-module.exports.tags = ["SampleNFT", "NFProof", "TheBurn"];
+module.exports.tags = ["NFProof", "TheBurn"];
