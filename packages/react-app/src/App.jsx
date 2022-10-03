@@ -1,4 +1,6 @@
 import { Button, Col, Menu, Row, Divider, Layout } from "antd";
+import GlobalStyles from './styles/GlobalStyles';
+import { css } from "styled-components/macro"; //eslint-disable-line
 import "antd/dist/antd.css";
 import {
   useBalance,
@@ -29,9 +31,9 @@ import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { Home, ExampleUI, Hints, Subgraph, Minter, MintSamples, Burner, ViewProof, SetProofs, EditProof, BurnProof, NFPMinter, YourCollectibles } from "./views";
+import { Home, ExampleUI, Hints, Subgraph, Minter, MintSamples, Burner, ViewProof, SetProofs, EditProof, BurnProof, SearchNFT, YourCollectibles, NFPMinter } from "./views";
 import { useStaticJsonRPC } from "./hooks";
-
+import { TwoColumnWithFeaturesAndTestimonial as Hero } from "./components/hero/TwoColumnWithFeaturesAndTestimonial"
 const { ethers } = require("ethers");
 /*
     Welcome to 🏗 scaffold-eth !
@@ -65,12 +67,16 @@ const web3Modal = Web3ModalSetup();
 
 // 🛰 providers
 const providers = [
+];
+/*
+const providers = [
   "https://eth-mainnet.gateway.pokt.network/v1/lb/611156b4a585a20035148406",
   `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
   "https://rpc.scaffoldeth.io:48544",
-];
+];*/
 
 function App(props) {
+  
   // specify all the chains your app is available on. Eg: ['localhost', 'mainnet', ...otherNetworks ]
   // reference './constants.js' for other networks
   const networkOptions = [initialNetwork.name, "mainnet", "rinkeby"];
@@ -143,11 +149,12 @@ function App(props) {
   const yourMainnetBalance = useBalance(mainnetProvider, address);
 
   // const contractConfig = useContractConfig();
+  console.log("location:", location)
 
   const contractConfig = { deployedContracts: deployedContracts || {}, externalContracts: externalContracts || {} };
 
   // Load in your local 📝 contract and read a value from it:
-  const readContracts = useContractLoader(localProvider, contractConfig);
+  const readContracts = useContractLoader(localProvider, contractConfig, localChainId);
 
   // If you want to make 🔐 write transactions to your contracts, use the userSigner:
   const writeContracts = useContractLoader(userSigner, contractConfig, localChainId);
@@ -247,14 +254,18 @@ function App(props) {
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
   return (
-    <div className="App">
+    <div className = "App">
+      {location.pathname == '/' && <GlobalStyles />}
       {/* ✏️ Edit the header and change the title to your project name */}
+      {
+        location.pathname !== '/' &&
+      <>
       <Header>
         {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-        <div style={{ position: "relative", display: "flex", flexDirection: "column" }}>
+        <div style={{ position: "relative", display: "flex", flexDirection: "column"}}>
           <div style={{ display: "flex", flex: 1 }}>
             {USE_NETWORK_SELECTOR && (
-              <div style={{ marginRight: 20 }}>
+              <div style={{ marginRight: 10 }}>
                 <NetworkSwitch
                   networkOptions={networkOptions}
                   selectedNetwork={selectedNetwork}
@@ -277,9 +288,7 @@ function App(props) {
           </div>
         </div>
       </Header>
-      {yourLocalBalance.lte(ethers.BigNumber.from("0")) && (
-        <FaucetHint localProvider={localProvider} targetNetwork={targetNetwork} address={address} />
-      )}
+      
       <NetworkDisplay
         NETWORKCHECK={NETWORKCHECK}
         localChainId={localChainId}
@@ -290,7 +299,7 @@ function App(props) {
       />
       <Menu style={{ textAlign: "center", marginTop: 20 }} selectedKeys={[location.pathname]} mode="horizontal">
         <Menu.Item key="/">
-          <Link to="/">App Home</Link>
+          <Link to="/">Home</Link>
         </Menu.Item>
         <Menu.Item key="/debug">
           <Link to="/debug">Debug Contracts</Link>
@@ -312,11 +321,12 @@ function App(props) {
         </Menu.Item>
         
       </Menu>
+      </>
+      }
 
       <Switch>
         <Route exact path="/">
-          {/* pass in any web3 props to this Home component. For example, yourLocalBalance */}
-          <Home yourLocalBalance={yourLocalBalance} readContracts={readContracts} />
+          <Home />
         </Route>
         <Route exact path="/debug">
           {/*
@@ -334,6 +344,7 @@ function App(props) {
             address={address}
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
+            chainId={selectedChainId}
           />
           <Contract
             name="NFProof"
@@ -344,6 +355,7 @@ function App(props) {
             address={address}
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
+            chainId={selectedChainId}
           />
           <Contract
             name="TheBurn"
@@ -354,6 +366,7 @@ function App(props) {
             address={address}
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
+            chainId={selectedChainId}
           />
           <Contract
             name="SampleNFT"
@@ -364,6 +377,7 @@ function App(props) {
             address={address}
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
+            chainId={selectedChainId}
           />
           
         </Route>
@@ -400,16 +414,6 @@ function App(props) {
             contractConfig={contractConfig}
             chainId={1}
           />
-          {/*
-            <Contract
-              name="UNI"
-              customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.UNI}
-              signer={userSigner}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer="https://etherscan.io/"
-            />
-            */}
         </Route>
         <Route path="/subgraph">
           <Subgraph
@@ -431,6 +435,7 @@ function App(props) {
             writeContracts={writeContracts}
             readContracts={readContracts}
             blockExplorer = {blockExplorer}
+            chainId={selectedChainId}
           />
         </Route>
         <Route path="/mintsamples">
@@ -445,6 +450,7 @@ function App(props) {
             writeContracts={writeContracts}
             readContracts={readContracts}
             blockExplorer = {blockExplorer}
+            chainId={selectedChainId}
           />
         </Route>
         <Route path="/burner">
@@ -459,6 +465,7 @@ function App(props) {
             writeContracts={writeContracts}
             readContracts={readContracts}
             blockExplorer = {blockExplorer}
+            chainId={selectedChainId}
           />
         </Route>
           <Route path="/setproofs">
@@ -473,6 +480,7 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               blockExplorer = {blockExplorer}
+              chainId={selectedChainId}
             />
           </Route>
           <Route path="/viewproof/:proof_id">
@@ -487,6 +495,7 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               blockExplorer = {blockExplorer}
+              chainId={selectedChainId}
             />
           </Route>
           <Route path="/editproof/:proof_id">
@@ -501,6 +510,7 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               blockExplorer = {blockExplorer}
+              chainId={selectedChainId}
             />
           </Route>
           <Route path="/burnproof/:proof_id">
@@ -515,9 +525,10 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               blockExplorer = {blockExplorer}
+              chainId={selectedChainId}
             />
           </Route>
-          <Route path="/nfpminter">
+          <Route path="/nfpminter/:search_contract/:search_token">
             <NFPMinter
               address={address}
               userSigner={userSigner}
@@ -529,6 +540,22 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               blockExplorer = {blockExplorer}
+              chainId={selectedChainId}
+            />
+          </Route>
+          <Route path="/searchnft">
+            <SearchNFT
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              blockExplorer = {blockExplorer}
+              chainId={selectedChainId}
             />
           </Route>
           <Route path="/yourcollectibles">
@@ -543,39 +570,17 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               blockExplorer = {blockExplorer}
+              chainId={selectedChainId}
             />
           </Route>
+          
+          
       </Switch>
 
       <Divider />
-
-      <ThemeSwitch />
-
+      
+    
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 0, padding: 1 }}>
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} networks={NETWORKS} />
-          </Col>
-
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-              }}
-              size="large"
-              shape="round"
-            >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row>
       
         <Row align="middle" gutter={[4, 4]}>
           <Col span={24}>
@@ -589,7 +594,7 @@ function App(props) {
             }
           </Col>
         </Row>
-      </div>
+      
     </div>
   );
 }
