@@ -66,7 +66,8 @@ export default function ViewProof({
   console.log("refreshedtokenMetadata", tokenMetadata)
   const [userObject, setUserObject] = useState();
   const [dataRetrieval, setDataRetrieval] = useState(false)
-
+  const [isNFPOwner, setIsNFPOwner] = useState(false)
+ 
   const noWallet =() => {
     <Text type="warning">No Wallet Assigned</Text>
   }
@@ -94,6 +95,10 @@ export default function ViewProof({
     textAlign: 'center',
   };
 
+  const cardStyle = {
+    justifyContent: 'start',
+  };
+
   useEffect(() => {
     const updateOwnerObject = async () => {
       console.log("ownerAddress:", ownerAddress)
@@ -103,6 +108,7 @@ export default function ViewProof({
       setUserObject(userResult);
       await getMetadata();
       tokenMetadata ? setDataRetrieval(true): console.log('no tokenMetadata yet')
+      ownerAddress === address ? setIsNFPOwner(true) : setIsNFPOwner(false);
     }
     ownerAddress && updateOwnerObject();
   }, [address, ownerAddress, getMetadata])
@@ -113,39 +119,43 @@ export default function ViewProof({
       <Row gutter={16}>
         
         <Col span={8}>
-          <Card title="Owner Info:" bordered={false}>
+          <Card title="Owner Info:" bordered={false} justify="start" >
             
-            Owner: <Address address = {ownerAddress && ownerAddress ? ownerAddress: null}  
-            fontSize = {12}/>
-            <br></br>
-            Owner's Wallet: {userObject && userObject[0].user>0 ? <Address address = {userObject[0].user}  
-            fontSize = {12}/>: "unassigned"}
-            <br></br>
-            NFP: #{proof_id}
+              <Paragraph><Text style ={{color: '#3c0d99'}} strong>Owner:</Text> <Address address = {ownerAddress && ownerAddress ? ownerAddress: null}  
+              fontSize = {12}/></Paragraph>
+              
+              <Paragraph><Text style ={{color: '#3c0d99'}}  strong>Owner's Wallet:</Text> {userObject && userObject.expires > 0 ? <Address address = {userOfProof}  
+              fontSize = {12}/>: <Text disabled>No Wallet</Text>} </Paragraph>
+              
+              <Paragraph><Text style ={{color: '#3c0d99'}} strong>NFP Token:</Text> #{proof_id}</Paragraph>
             
           </Card>
         </Col>
         <Col span={8}>
-          <Card title="Proof of NFT:" bordered={false}>
-              {dataRetrieval && tokenMetadata.title}
+          <Card title="Ownership of Token:" bordered={false}>
+              <Text style ={{color: '#3c0d99'}} strong>Token: </Text>{dataRetrieval && tokenMetadata.contractMetadata.name}
+                <br></br>
+              <Text style ={{color: '#3c0d99'}}  strong>Token Id:</Text> #{ownerAddress && ownerAddress ? ownerObject.originalTokenId.toNumber() : null}
               <br></br>
-              Contract Address: <Address
+              <Text style ={{color: '#3c0d99'}}  strong>Contract:</Text> <Address
                 address={ownerAddress && ownerAddress ? ownerObject.originalContract : null}
                 ensProvider={mainnetProvider}
                 fontSize={6}
                 />
-                <br></br>
-              Token Id: {ownerAddress && ownerAddress ? ownerObject.originalTokenId.toNumber() : null}
               <br></br>
-              <a href={`https://etherscan.io/token/`}>View on Etherscan</a>
+              <a href={`https://etherscan.io/token/${ownerOGContract}`} style ={{color: '#434190'}}>View on Etherscan</a>
             </Card>
         </Col>
         <Col span={8}>
-          <Card title="Owner Actions:" bordered={false}>
-            <Link to={`/editproof/${proof_id}`}>Assign Owner Wallet</Link>
+          <Card title="Owner Settings:" bordered={false}>
+            {ownerAddress && validateOwner && dataRetrieval && userObject.expires == 0 ?
+            <Link to={`/editproof/${proof_id}`} style ={{color: '#434190'}}>Add Owner</Link>
+              : <Text disabled>Add Owner Wallet</Text>}
             <br></br>
             <br></br>
-            <Link to={`/burnproof/${proof_id}`}>Burn NFP Token</Link>
+            {ownerAddress && validateOwner ?
+            <Link to={`/burnproof/${proof_id}`} style ={{color: '#434190'}}>Burn NFP</Link> 
+            : <Text disabled>Burn NFP Token</Text>}
             <br></br>
             <br></br>
           </Card>
@@ -167,19 +177,19 @@ export default function ViewProof({
         <Col span = {10}>
             
               {ownerAddress && validateOwner ? <Result
-                        icon={<CheckCircleTwoTone />}
+                        icon={<CheckCircleTwoTone twoToneColor="#4BB543"/>}
                         title="Confirmed Owner"
                       /> : <Result
                       title="Ownership Lost"
-                      icon={<CloseCircleTwoTone />}
-                      subtitle="Ownership of this nft has changed"
+                      icon={<CloseCircleTwoTone twoToneColor="#B90E0A"/>}
                     />}
               
               {ownerAddress && validateOwner && validateUser ? <Result
-                        icon={<CheckCircleTwoTone />}
+                        icon={<CheckCircleTwoTone twoToneColor="#4BB543" />}
                         title="Valid Owner Wallet"
                       /> : <Result
-                      icon={<CloseCircleTwoTone />}
+                      icon={<CloseCircleTwoTone twoToneColor="#B90E0A"/>}
+                      title="No Owner Wallet Assigned"
                     /> }
             
         </Col>
