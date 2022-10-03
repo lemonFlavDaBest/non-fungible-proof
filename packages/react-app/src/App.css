@@ -6,7 +6,7 @@
 .space-align-container-cards {
   display:flex;
   flex-wrap:wrap;
-  justify-content:space-between;
+  justify-content:start;
 }
 
 .space-align-container {
@@ -34,6 +34,3 @@
   display: flex; /*or inline flex*/
 }
 
-.space-center-align-container{
-  
-}
