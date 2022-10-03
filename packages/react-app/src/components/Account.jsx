@@ -66,7 +66,7 @@ export default function Account({
   const display = !minimized && (
     <span>
       {address && (
-        <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} fontSize={20} />
+        <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} fontSize={12} />
       )}
       <Balance address={address} provider={localProvider} price={price} size={20} />
       {!isContract && (
@@ -77,7 +77,7 @@ export default function Account({
           ensProvider={mainnetProvider}
           price={price}
           color={currentTheme === "light" ? "#1890ff" : "#2caad9"}
-          size={22}
+          size={12}
           padding={"0px"}
         />
       )}
