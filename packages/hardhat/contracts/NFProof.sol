@@ -68,13 +68,10 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     event Mint(uint256 tokenId, address minter);
     event Burn(uint256 tokenId);
     
-
-
-
     mapping (uint256  => UserInfo) public _users;
     mapping (uint256  => OwnerInfo) public _owners;
     mapping(address => mapping(uint256 => uint256)) public tokenToToken;
-    mapping(address => mapping(uint256 => bool)) private tokenHasMinted;
+    mapping(address => mapping(uint256 => bool)) public tokenHasMinted;
     mapping(address => mapping(uint256 => bool)) public tokenHasBeenPaidfor;
     mapping(uint256 => bool) private tokenIsMinting;
     mapping(uint256 => bool) private tokenIsBurning;
@@ -94,7 +91,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     function isValidUserToken(uint256 tokenId) external view returns (bool) {
         if( uint256(_users[tokenId].expires) >=  block.timestamp){
             OwnerInfo memory verifyOwner = _owners[tokenId];
-            require(IERC721(verifyOwner.originalContract).ownerOf(tokenId) == verifyOwner.owner, "This item has been sold and transferred");
+            require(IERC721(verifyOwner.originalContract).ownerOf(verifyOwner.originalTokenId) == verifyOwner.owner, "This item has been sold and transferred");
             return true;
         }
         return false;
@@ -108,9 +105,10 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         ercMintPrice = newPrice;
     }
 
+
     function isValidOwner(uint256 tokenId) public view returns(bool) {
         OwnerInfo memory verifyOwner = _owners[tokenId];
-        require(IERC721(verifyOwner.originalContract).ownerOf(tokenId) == verifyOwner.owner, "This item has been sold and/or transferred");
+        require(IERC721(verifyOwner.originalContract).ownerOf(verifyOwner.originalTokenId) == verifyOwner.owner, "This item has been sold and/or transferred");
         return true;
     }
     
@@ -127,9 +125,11 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         }
     }
 
+
+    //might need to fix this
     function validateOwnerUser(address originContract, uint256 originTokenId, address verifyUser) external view returns (bool){
         uint256 proofToken = tokenToToken[originContract][originTokenId];
-        require(verifyUser == userOf(proofToken), "These are not the same address");
+        require(verifyUser == userOf(proofToken), "The entered address is not equal to the nfp user address");
         require(isValidOwner(proofToken), "This is not the valid owner of this NFT");
         return true;
     }
@@ -148,6 +148,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     function setUser(uint256 tokenId, address user, uint64 expires) public override virtual{
         require(_isApprovedOrOwner(msg.sender, tokenId),"ERC721: transfer caller is not owner nor approved");
         require(userOf(tokenId)==address(0),"User already assigned");
+        require(isValidOwner(tokenId), "Cannot set user if you do not own the underlying asset");
         require(expires > block.timestamp, "expires should be in future");
         UserInfo storage info =  _users[tokenId];
         info.user = user;
@@ -228,14 +229,16 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         revert("No messing with approvals, sorry");
     }
 
-
+    //test exists and delete tokentotoken
     function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external virtual {
+        require(_exists(proofTokenId), "this token does not exist or has been burned");
         require(msg.sender == burnerAddress, "only the burner contract may call this function");
         require(tokenToToken[originContractAddress][originTokenId] == proofTokenId, "these do not represent the same token");
         delete _users[proofTokenId];
         delete _owners[proofTokenId];
         tokenIsBurning[proofTokenId] = true;
         _burn(proofTokenId);
+        delete tokenToToken[originContractAddress][originTokenId];
         tokenHasMinted[originContractAddress][originTokenId] = false;
         tokenHasBeenPaidfor[originContractAddress][originTokenId] = false;
         tokenIsBurning[proofTokenId] = false;
