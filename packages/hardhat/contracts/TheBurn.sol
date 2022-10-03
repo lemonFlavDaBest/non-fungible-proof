@@ -17,9 +17,8 @@ contract TheBurn is Ownable {
    function setburnPrice(uint256 newPrice) public onlyOwner {
       burnPrice = newPrice;
     }
-
-    //virtual override and function name just burn
-    function burner(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) public payable virtual {
+ 
+    function burner(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external payable virtual {
       require(msg.value>=burnPrice, "you didnt pay enough to the burn troll");
       require(IERC721(originContractAddress).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
       nfProof.burn(originContractAddress, originTokenId, proofTokenId);
