@@ -26,6 +26,14 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
 */
 
 //console.log("ethers", ethers)
+console.log("post deploy")
+await deploy("SampleNFT", {
+  // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+  from: deployer,
+  log: true,
+});
+
+console.log("post deploy finished")
   
 };
-module.exports.tags = ["NFProof", "TheBurn"];
+module.exports.tags = ["NFProof", "TheBurn", "SampleNFT", "ApeSample"];
