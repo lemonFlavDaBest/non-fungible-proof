@@ -12,7 +12,15 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   const chainId = await getChainId();
 
   console.log("predeploy")
-
+  await deploy("ApeSample", {
+    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+    from: deployer,
+    args:"0x13D029DbB5fc28A9D9450B18442879FDb87E901e",
+    log: true,
+  });
+  
+  const apeSample = await ethers.getContract("ApeSample", deployer);
+  console.log("predeploy finished")
   //Need to put in the ape eth address
   await deploy("NFProof", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
