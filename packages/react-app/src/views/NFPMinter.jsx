@@ -1,6 +1,6 @@
 import { Button, Card, DatePicker, Divider, Input, Progress, Slider, Spin, Switch, List, Row, Col, Image, Space, Typography } from "antd";
 import React, { useState, useEffect } from "react";
-import { utils } from "ethers";
+import { utils, BigNumber } from "ethers";
 import { SyncOutlined } from "@ant-design/icons";
 import {
   useBalance,
@@ -10,7 +10,7 @@ import {
   useOnBlock,
   useUserProviderAndSigner,
 } from "eth-hooks";
-import { Link, Route, useLocation, useParams } from "react-router-dom";
+import { Link, Route, useLocation, useParams, useHistory } from "react-router-dom";
 import { Address, Balance, Events, AddressInput } from "../components";
 
 export default function NFPMinter({
@@ -24,10 +24,12 @@ export default function NFPMinter({
   readContracts,
   writeContracts,
   blockExplorer,
+  contractConfig
 }) {
 
-  
+    let history = useHistory();
   const balance = useContractReader(readContracts, "NFProof", "balanceOf", [address]);
+  console.log("baaaalance:", balance)
   const {search_contract, search_token}= useParams();
   const yourBalance = balance && balance.toNumber && balance.toNumber();
   const [transferToAddresses, setTransferToAddresses] = useState({});
@@ -37,10 +39,37 @@ export default function NFPMinter({
   const [activeTabKey1, setActiveTabKey1] = useState('tab1');
   const [tokenPaid, setTokenPaid] = useState(null)
   const tokenPaidBool = useContractReader(readContracts, "NFProof", "tokenHasBeenPaidFor", [search_contract, search_token]);
-  const getApproved = useContractReader()
+  const tokenMintBool = useContractReader(readContracts, "NFProof", "tokenHasMinted", [search_contract, search_token]);
+  const tokenToToken = useContractReader(readContracts, "NFProof", "tokenToToken", [search_contract, search_token]);
+  console.log("tokenPaidBool:", tokenPaidBool)
+  const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
+  const getBalance = useContractReader(mainnetContracts, "APE", "balanceOf", [address]);
+  console.log("apeBalance:", getBalance)
+  const getAllowance = useContractReader(mainnetContracts, "APE", "allowance",[address, "0x4d224452801ACEd8B2F0aebE155379bb5D594381"])
+  const [allowance, setAllowance] = useState(0)
+  const nfProofAddress = readContracts && readContracts.NFProof && readContracts.NFProof.address
+  console.log("nfproofaddress:", nfProofAddress)
+  //console.log("getAllowance:", getAllowance)
+  const getAllowanceTest = useContractReader(readContracts, "ApeSample", "allowance", [address, nfProofAddress])
+  const allowanceTest = getAllowanceTest && getAllowanceTest.toNumber && getAllowanceTest.toString()
+  const [allowNum, setAllowNum] = useState(0)
+  const allowNumber = getAllowanceTest && getAllowanceTest.toNumber &&  parseInt(utils.formatEther(allowanceTest))
+  const proofToken = tokenToToken && tokenToToken.toNumber && tokenToToken.toNumber();
+  console.log("allowNumber", allowNumber)
+  console.log("tokentotoken:", proofToken)
+  console.log("tokenMintBool:", tokenMintBool)
+
+  
+
+  console.log("getAllowanceTest:", getAllowanceTest)
+
   
 
   useEffect(() => {
+    if (tokenMintBool === true && tokenToToken.toNumber) {
+     history.push(`/viewproof/${proofToken}`) ;
+    }
+
     const updateProofCollectibles = async () => {
       const collectibleUpdate = [];
       for (let tokenIndex = 0; tokenIndex < balance; tokenIndex++) {
@@ -62,8 +91,8 @@ export default function NFPMinter({
       setProofCollectibles(collectibleUpdate);
     };
     updateProofCollectibles()
-    console.log("proofCollectibles:", proofCollectibles)
-  }, [address, yourBalance]);
+
+  }, [address, tokenPaid, allowNumber, tokenMintBool, tokenToToken]);
 
   /*async function onMint() {
      //look how you call setPurpose on your contract: 
@@ -114,10 +143,8 @@ export default function NFPMinter({
   }
 
   const handleFreeMintClick = async() => {
-    
     /* look how you call setPurpose on your contract: */
     /* notice how you pass a call back for tx updates too */
-    
     const result = tx(writeContracts.NFProof.safeMint(search_contract, search_token), update => {
       console.log("📡 Transaction Update:", update);
       if (update && (update.status === "confirmed" || update.status === 1)) {
@@ -149,6 +176,18 @@ export default function NFPMinter({
     )
   }
 
+
+  const ApproveApe = () => {
+    return (<Button type= "link" style={{backgroundColor: '#805ad5', color:'white'}} onClick = {handleApproveClick}>Approve</Button>)
+  }
+
+  const PayWithApe = () => {
+    
+    return ( 
+            <Button type= "link" style={{backgroundColor: '#805ad5', color:'white'}} onClick={handleApePay}>1 $APE</Button>
+    )
+  }
+
   const tabList = [
     {
       key: 'tab1',
@@ -166,8 +205,7 @@ export default function NFPMinter({
           <br></br>
           <Typography.Paragraph>After minting you can set any any of your wallets as the offical owner.</Typography.Paragraph>
           <br></br>
-        {tokenPaidBool ?  {FreeMint} :
-
+        {tokenPaidBool ?  <FreeMint /> :
           <Button type= "link" style={{backgroundColor: '#805ad5', color:'white'}} onClick = {handleEthMintClick}>Mint</Button>
         }
           </>
@@ -177,24 +215,55 @@ export default function NFPMinter({
             <br></br>
             <Typography.Paragraph>After minting you can set any any of your wallets as the offical owner.</Typography.Paragraph>
             <br></br>
-            <Button type= "link" style={{backgroundColor: '#805ad5', color:'white'}}>Mint</Button>
+            {tokenPaidBool ? <FreeMint />: allowNumber >= 1  ? <PayWithApe />:<ApproveApe />  }
             </>,
   };
 
-  // I want user to flip a switch kind of thing to either mint with ape or mint with eth
-    //It searches for them and shows if it is already minted. if already minted allow them to click on it to viewproof. 
-    //If not already minted allow them to go to mint page
-    const getApproved = () => {
-
+    const handleApproveClick = async() => {
+        const cost = utils.parseEther("1")
+        //approve this address for the contract
+        const result = tx(writeContracts.ApeSample.approve(nfProofAddress, cost), update => {
+            console.log("📡 Transaction Update:", update);
+            if (update && (update.status === "confirmed" || update.status === 1)) {
+              console.log(" 🍾 Transaction " + update.hash + " finished!");
+              console.log(
+                " ⛽️ " +
+                  update.gasUsed +
+                  "/" +
+                  (update.gasLimit || update.gas) +
+                  " @ " +
+                  parseFloat(update.gasPrice) / 1000000000 +
+                  " gwei",
+              );
+            }
+          });
+          console.log("awaiting metamask/web3 confirm result...", result);
+          console.log(await result);
+          
     }
 
-    const payWithApe = () => {
-
+    const handleApePay = async() => {
+        const cost = utils.parseEther("1");
+              const result = tx(writeContracts.NFProof.payWithERC(cost, search_contract, [search_token]), update => {
+                console.log("📡 Transaction Update:", update);
+                if (update && (update.status === "confirmed" || update.status === 1)) {
+                  console.log(" 🍾 Transaction " + update.hash + " finished!");
+                  console.log(
+                    " ⛽️ " +
+                      update.gasUsed +
+                      "/" +
+                      (update.gasLimit || update.gas) +
+                      " @ " +
+                      parseFloat(update.gasPrice) / 1000000000 +
+                      " gwei",
+                  );
+                }
+              });
+              console.log("awaiting metamask/web3 confirm result...", result);
+              console.log(await result);
+              result ? setTokenPaid(true) : setTokenPaid(false);
     }
 
-    const payWithEth = () => {
-
-    }
 
     /*
     const getTokenPaidBool = async() => {
