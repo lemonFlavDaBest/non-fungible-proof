@@ -541,6 +541,7 @@ function App(props) {
               readContracts={readContracts}
               blockExplorer = {blockExplorer}
               chainId={selectedChainId}
+              contractConfig={contractConfig}
             />
           </Route>
           <Route path="/searchnft">

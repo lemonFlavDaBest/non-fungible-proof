@@ -796,6 +796,10 @@ module.exports = {
         address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
         abi: ERC20ABI,
       },
+      APE: {
+        address: "0x4d224452801ACEd8B2F0aebE155379bb5D594381",
+        abi: ERC20ABI,
+      }
     },
   },
 };
