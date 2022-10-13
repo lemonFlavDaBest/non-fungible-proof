@@ -67,6 +67,7 @@ export default function ViewProof({
   const [userObject, setUserObject] = useState();
   const [dataRetrieval, setDataRetrieval] = useState(false)
   const [isNFPOwner, setIsNFPOwner] = useState(false)
+  
  
   const noWallet =() => {
     <Text type="warning">No Wallet Assigned</Text>
@@ -133,7 +134,7 @@ export default function ViewProof({
         </Col>
         <Col span={8}>
           <Card title="Ownership of Token:" bordered={false}>
-              <Text style ={{color: '#3c0d99'}} strong>Token: </Text>{dataRetrieval && tokenMetadata.contractMetadata.name}
+              <Text style ={{color: '#3c0d99'}} strong>Token: </Text>{dataRetrieval && tokenMetadata.contractMetadata && tokenMetadata.contractMetadata.name}
                 <br></br>
               <Text style ={{color: '#3c0d99'}}  strong>Token Id:</Text> #{ownerAddress && ownerAddress ? ownerObject.originalTokenId.toNumber() : null}
               <br></br>
@@ -143,19 +144,19 @@ export default function ViewProof({
                 fontSize={6}
                 />
               <br></br>
-              <a href={`https://etherscan.io/token/${ownerOGContract}`} style ={{color: '#434190'}}>View on Etherscan</a>
+              <a style ={{color: '#434190'}} href={`https://etherscan.io/token/${ownerOGContract}`}>View on Etherscan</a>
             </Card>
         </Col>
         <Col span={8}>
           <Card title="Owner Settings:" bordered={false}>
             {ownerAddress && validateOwner && dataRetrieval && userObject.expires == 0 ?
             <Link to={`/editproof/${proof_id}`} style ={{color: '#434190'}}>Add Owner</Link>
-              : <Text disabled>Add Owner Wallet</Text>}
+              : <Text disabled>Add Owner</Text>}
             <br></br>
             <br></br>
             {ownerAddress && validateOwner ?
             <Link to={`/burnproof/${proof_id}`} style ={{color: '#434190'}}>Burn NFP</Link> 
-            : <Text disabled>Burn NFP Token</Text>}
+            : <Text disabled>Burn NFP</Text>}
             <br></br>
             <br></br>
           </Card>
@@ -178,7 +179,7 @@ export default function ViewProof({
             
               {ownerAddress && validateOwner ? <Result
                         icon={<CheckCircleTwoTone twoToneColor="#4BB543"/>}
-                        title="Confirmed Owner"
+                        title={<Typography.Text strong>Confirmed Owner</Typography.Text>}
                       /> : <Result
                       title="Ownership Lost"
                       icon={<CloseCircleTwoTone twoToneColor="#B90E0A"/>}
@@ -186,7 +187,7 @@ export default function ViewProof({
               
               {ownerAddress && validateOwner && validateUser ? <Result
                         icon={<CheckCircleTwoTone twoToneColor="#4BB543" />}
-                        title="Valid Owner Wallet"
+                      title={<Typography.Text strong>Valid Owner Wallet</Typography.Text>}
                       /> : <Result
                       icon={<CloseCircleTwoTone twoToneColor="#B90E0A"/>}
                       title="No Owner Wallet Assigned"
