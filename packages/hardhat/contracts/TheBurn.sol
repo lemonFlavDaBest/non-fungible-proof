@@ -10,7 +10,7 @@ contract TheBurn is Ownable {
     NFProof public nfProof;
 
     constructor(address payable proofContract) {
-      burnPrice = 10000000000000; //.00001 ether
+      burnPrice = 100000000000; //.0000001 ether
       nfProof = NFProof(proofContract);
     }
 
