@@ -36,7 +36,7 @@ import { Typography, Button, Card, DatePicker, Divider, Input, Progress, Slider,
 import React, { useState, useEffect, useCallback } from "react";
 import { utils, BigNumber } from "ethers";
 import { SyncOutlined } from "@ant-design/icons";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useHistory } from "react-router-dom";
 import {
   useBalance,
   useContractLoader,
@@ -57,7 +57,7 @@ export default function BurnProof({
   readContracts,
   writeContracts,
 }) {
-
+  let history = useHistory()
   const {proof_id}= useParams();
   const ownerObject = useContractReader(readContracts, "NFProof", "_owners", [proof_id]);
   const userOfProof = useContractReader(readContracts, "NFProof", "userOf", [proof_id]);
@@ -77,11 +77,14 @@ export default function BurnProof({
   const ownerOGContract = ownerObject && ownerObject.proofTokenId.toNumber && ownerObject.originalContract;
   const ownerOGToken = ownerObject && ownerObject.proofTokenId.toNumber && ownerObject.originalTokenId;
   const [isNFPOwner, setIsNFPOwner] = useState(false);
+  const [loadingState, setLoadingState] = useState(false)
 
   const handleClick = async() => {
     if (window.confirm("Are you sure? you can always mint another :)")){
-    const cost = parseEther(".01")
+    const cost = parseEther(".0000001")
     console.log(nftCollection, originalTokenId,proofTokenId, cost)
+    setLoadingState(true)
+    try {
     const result = tx(writeContracts.TheBurn.burner(nftCollection, originalTokenId, proofTokenId, {value: cost}), update => {
     console.log("📡 Transaction Update:", update);
     if (update && (update.status === "confirmed" || update.status === 1)) {
@@ -99,6 +102,11 @@ export default function BurnProof({
       });
     console.log("awaiting metamask/web3 confirm result...", result);
     console.log(await result);
+    history.push('/searchnft')
+    } catch(e) {
+      console.log(e)
+      setLoadingState(false)
+    }
     
     }
   }
@@ -140,28 +148,28 @@ export default function BurnProof({
       <Row gutter={16}>
         <Col span={12}>
           <Card title="Owner Info:" bordered={false}>
-          <Paragraph><Text strong>Owner:</Text> <Address address = {ownerAddress && ownerAddress ? ownerAddress: null}  
+          <Paragraph><Text style ={{color: '#3c0d99'}} strong>Owner:</Text> <Address address = {ownerAddress && ownerAddress ? ownerAddress: null}  
               fontSize = {12}/></Paragraph>
               
-              <Paragraph><Text strong>Owner's Wallet:</Text> {userObject && userObject.expires > 0 ? <Address address = {userOfProof}  
+              <Paragraph><Text style ={{color: '#3c0d99'}} strong>Owner's Wallet:</Text> {userObject && userObject.expires > 0 ? <Address address = {userOfProof}  
               fontSize = {12}/>: <Text disabled>No Wallet</Text>} </Paragraph>
               
-              <Paragraph><Text strong>NFP Token:</Text> #{proof_id}</Paragraph>
+              <Paragraph><Text style ={{color: '#3c0d99'}} strong>NFP Token:</Text> #{proof_id}</Paragraph>
           </Card>
         </Col>
         <Col span={12}>
           <Card title="Proof of NFT:" bordered={false}>
-          <Text strong>Token: </Text>{dataRetrieval && tokenMetadata.contractMetadata.name}
+          <Text style ={{color: '#3c0d99'}} strong>Token: </Text>{dataRetrieval && tokenMetadata.contractMetadata.name}
                 <br></br>
-              <Text strong>Token Id:</Text> #{ownerAddress && ownerAddress ? ownerObject.originalTokenId.toNumber() : null}
+              <Text style ={{color: '#3c0d99'}} strong>Token Id:</Text> #{ownerAddress && ownerAddress ? ownerObject.originalTokenId.toNumber() : null}
               <br></br>
-              <Text strong>Contract:</Text> <Address
+              <Text style ={{color: '#3c0d99'}} strong>Contract:</Text> <Address
                 address={ownerAddress && ownerAddress ? ownerObject.originalContract : null}
                 ensProvider={mainnetProvider}
                 fontSize={6}
                 />
               <br></br>
-              <a href={`https://etherscan.io/token/${ownerOGContract}`}>View on Etherscan</a>
+              <a style ={{color: '#434190'}} href={`https://etherscan.io/token/${ownerOGContract}`}>View on Etherscan</a>
             </Card>
             
         </Col>
@@ -185,7 +193,7 @@ export default function BurnProof({
             You can always mint another NFP after burning it
             <Divider />{
               isNFPOwner?
-            <Button type="primary" danger onClick={handleClick}>BURN</Button>:
+            <Button type="primary" danger onClick={handleClick} loading={loadingState}>BURN</Button>:
             <Button type="primary" danger disabled>BURN</Button>
             }
 
