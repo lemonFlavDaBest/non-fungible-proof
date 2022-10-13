@@ -15,7 +15,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   await deploy("ApeSample", {
     // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
     from: deployer,
-    args:"0x13D029DbB5fc28A9D9450B18442879FDb87E901e",
+    args:["0x13D029DbB5fc28A9D9450B18442879FDb87E901e"],
     log: true,
   });
   
