@@ -78,23 +78,20 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
 
 
     constructor(address token_addr) ERC721("NonFungibleProof","NFP"){
-        mintPrice = 10000000000000000; //.01 ether
+        mintPrice = 1000000000000000; //.001 ether
         initVar=true;
         token = IERC20(token_addr);
         ercMintPrice = 1 ether;
      }
 
-    function setMintPrice(uint256 newPrice) external onlyOwner {
-        mintPrice = newPrice;
+    function init(address newBurnerAddress) public onlyOwner {
+        require(initVar=true, "this has already been run");
+        burnerAddress = newBurnerAddress;
+        initVar = false;
     }
 
-    function isValidUserToken(uint256 tokenId) external view returns (bool) {
-        if( uint256(_users[tokenId].expires) >=  block.timestamp){
-            OwnerInfo memory verifyOwner = _owners[tokenId];
-            require(IERC721(verifyOwner.originalContract).ownerOf(verifyOwner.originalTokenId) == verifyOwner.owner, "This item has been sold and transferred");
-            return true;
-        }
-        return false;
+    function setMintPrice(uint256 newPrice) external onlyOwner {
+        mintPrice = newPrice;
     }
 
     function setToken(address new_token_addr) external onlyOwner{
@@ -105,13 +102,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         ercMintPrice = newPrice;
     }
 
-
-    function isValidOwner(uint256 tokenId) public view returns(bool) {
-        OwnerInfo memory verifyOwner = _owners[tokenId];
-        require(IERC721(verifyOwner.originalContract).ownerOf(verifyOwner.originalTokenId) == verifyOwner.owner, "This item has been sold and/or transferred");
-        return true;
-    }
-    
     function payWithERC(uint256 tokenInput, address originContractAddress, uint256[] memory originTokenIds) external {
         uint256 totalPrice = ercMintPrice*originTokenIds.length;
         require(tokenInput >=totalPrice, "you didn't pay enough for all of these mints");
@@ -125,19 +115,49 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         }
     }
 
+    //bulk pay an array of tokens
+    function payForMints(address originContractAddress, uint256[] memory originTokenIds) external payable {
+        uint256 totalPrice = mintPrice*originTokenIds.length;
+        require(msg.value >=totalPrice, "you didn't pay enough for all of these mints");
+        for (uint i = 0; i < originTokenIds.length; i++) {
+            require(!tokenHasMinted[originContractAddress][originTokenIds[i]], "token already minted");
+            require(!tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]], "token already paid for");
+            require(IERC721(originContractAddress).ownerOf(originTokenIds[i]) != address(0), "This token doesn't exist");
+            tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]] = true;
+        }
+    }
 
-    //might need to fix this
-    function validateOwnerUser(address originContract, uint256 originTokenId, address verifyUser) external view returns (bool){
-        uint256 proofToken = tokenToToken[originContract][originTokenId];
-        require(verifyUser == userOf(proofToken), "The entered address is not equal to the nfp user address");
-        require(isValidOwner(proofToken), "This is not the valid owner of this NFT");
+    function isValidUserToken(uint256 tokenId) external view returns (bool) {
+        if( uint256(_users[tokenId].expires) >=  block.timestamp){
+            OwnerInfo memory verifyOwner = _owners[tokenId];
+            require(IERC721(verifyOwner.originalContract).ownerOf(verifyOwner.originalTokenId) == verifyOwner.owner, "This item has been sold and transferred");
+            return true;
+        }
+        return false;
+    }
+
+    function isValidOwner(uint256 tokenId) public view returns(bool) {
+        OwnerInfo memory verifyOwner = _owners[tokenId];
+        require(IERC721(verifyOwner.originalContract).ownerOf(verifyOwner.originalTokenId) == verifyOwner.owner, "This item has been sold and/or transferred");
         return true;
     }
 
-    function init(address newBurnerAddress) public onlyOwner {
-        require(initVar=true, "this has already been run");
-        burnerAddress = newBurnerAddress;
-        initVar = false;
+    //validates a wallet as the owner of a specific token from an nft collection
+    function validateOwnerUser(address originContract, uint256 originTokenId) external view returns (bool){
+        uint256 proofToken = tokenToToken[originContract][originTokenId];
+        require(_exists(proofToken), "this token does not exist or has been burned");
+        require(msg.sender == userOf(proofToken), "This wallet is not equal to the nfp user address");
+        require(isValidOwner(proofToken) == true, "This is not the valid owner of this NFT");
+        return true;
+    }
+
+    //works similar to above function, accept that it is attempting to verify a specific address
+    function validateVerifyUser(address originContract, uint256 originTokenId, address verifyAddress) external view returns (bool){
+        uint256 proofToken = tokenToToken[originContract][originTokenId];
+        require(_exists(proofToken), "this token does not exist or has been burned");
+        require(verifyAddress == userOf(proofToken), "This wallet is not equal to the nfp user address");
+        require(isValidOwner(proofToken) == true, "This is not the valid owner of this NFT");
+        return true;
     }
 
     /// @notice set the user and expires of a NFT
@@ -148,7 +168,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     function setUser(uint256 tokenId, address user, uint64 expires) public override virtual{
         require(_isApprovedOrOwner(msg.sender, tokenId),"ERC721: transfer caller is not owner nor approved");
         require(userOf(tokenId)==address(0),"User already assigned");
-        require(isValidOwner(tokenId), "Cannot set user if you do not own the underlying asset");
+        require(isValidOwner(tokenId) == true, "Cannot set user if you do not own the underlying asset");
         require(expires > block.timestamp, "expires should be in future");
         UserInfo storage info =  _users[tokenId];
         info.user = user;
@@ -170,7 +190,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         return address(0);
     }
 
-
     /// @notice Get the user expires of an NFT
     /// @dev The zero value indicates that there is no user 
     /// @param tokenId The NFT to get the user expires for
@@ -185,16 +204,13 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         return interfaceId == type(IERC4907).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    //bulk pay an array of tokens
-    function payForMints(address originContractAddress, uint256[] memory originTokenIds) external payable {
-        uint256 totalPrice = mintPrice*originTokenIds.length;
-        require(msg.value >=totalPrice, "you didn't pay enough for all of these mints");
-        for (uint i = 0; i < originTokenIds.length; i++) {
-            require(!tokenHasMinted[originContractAddress][originTokenIds[i]], "token already minted");
-            require(!tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]], "token already paid for");
-            require(IERC721(originContractAddress).ownerOf(originTokenIds[i]) != address(0), "This token doesn't exist");
-            tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]] = true;
-        }
+    //will find the wallet address that is set as owner given a contract address and tokenId
+    //if no valid user is set as owner, will return false
+    function findValidUserProofToken(address originContractAddress, uint256 originTokenId) external view returns (address){
+        uint256 proofToken = tokenToToken[originContractAddress][originTokenId];
+        require(userOf(proofToken) != address(0), "No valid user assigned");
+        require(isValidOwner(proofToken) == true, "Token has been transferred");
+        return userOf(proofToken);
     }
 
     //this willl mint one nft. checks in order 1) if you paid enough for mint 2) if you are the owner of the nft
@@ -226,10 +242,9 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     function setApprovalForAll(address _operator, bool _approved) public view override(ERC721, IERC721) {
         require(_operator == burnerAddress, "only allow approval to burnerAddress");
         require(_approved == true, "this contract doesn't allow messing with approvals");
-        revert("No messing with approvals, sorry");
+        revert("This contract does not allow altering approvals");
     }
 
-    //test exists and delete tokentotoken
     function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external virtual {
         require(_exists(proofTokenId), "this token does not exist or has been burned");
         require(msg.sender == burnerAddress, "only the burner contract may call this function");
@@ -245,9 +260,9 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         emit Burn(proofTokenId);
     }
 
-        /**
-        * @dev See {IERC721Metadata-tokenURI}.
-        */
+    /**
+    * This token copies metadata from the original token. 
+     */
     function tokenURI(uint256 tokenId) public view virtual override(ERC721, IERC721Metadata) returns (string memory) {
         return IERC721Metadata(_owners[tokenId].originalContract).tokenURI(_owners[tokenId].originalTokenId);
     }
