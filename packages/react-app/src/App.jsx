@@ -31,10 +31,13 @@ import externalContracts from "./contracts/external_contracts";
 // contracts
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
-import { Home, ExampleUI, Hints, Subgraph, Minter, MintSamples, Burner, ViewProof, SetProofs, EditProof, BurnProof, SearchNFT, YourCollectibles, NFPMinter } from "./views";
+import { Home, ExampleUI, Hints, Subgraph, Minter, MintSamples, Burner, ViewProof, MyNFPs, EditProof, BurnProof, SearchNFT, YourCollectibles, NFPMinter } from "./views";
 import { useStaticJsonRPC } from "./hooks";
 import { TwoColumnWithFeaturesAndTestimonial as Hero } from "./components/hero/TwoColumnWithFeaturesAndTestimonial"
+import Footer from "./components/footers/MiniCenteredFooter.js";
+
 const { ethers } = require("ethers");
+
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -317,8 +320,8 @@ function App(props) {
         <Menu.Item key="/burner">
           <Link to="/burner">Burner</Link>
         </Menu.Item>
-        <Menu.Item key="/setproofs">
-          <Link to="/setproofs">Set Proofs</Link>
+        <Menu.Item key="/mynfps">
+          <Link to="/mynfps">View NFP Tokens</Link>
         </Menu.Item>
         
       </Menu>
@@ -469,8 +472,8 @@ function App(props) {
             chainId={selectedChainId}
           />
         </Route>
-          <Route path="/setproofs">
-            <SetProofs
+          <Route path="/mynfps">
+            <MyNFPs
               address={address}
               userSigner={userSigner}
               mainnetProvider={mainnetProvider}
@@ -579,7 +582,7 @@ function App(props) {
           
       </Switch>
 
-      <Divider />
+      
       
     
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
@@ -596,6 +599,8 @@ function App(props) {
             }
           </Col>
         </Row>
+
+      <Footer />
       
     </div>
   );
