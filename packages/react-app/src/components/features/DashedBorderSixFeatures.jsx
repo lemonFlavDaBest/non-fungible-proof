@@ -3,7 +3,7 @@ import styled from "styled-components";
 import tw from "twin.macro";
 //eslint-disable-next-line
 import { css } from "styled-components/macro";
-import { SectionHeading } from "components/misc/Headings.js";
+import { SectionHeading } from "../misc/Headings.js";
 
 import defaultCardImage from "../../images/shield-icon.svg";
 
@@ -53,7 +53,7 @@ const DecoratorBlob = styled(SvgDecoratorBlob3)`
   ${tw`pointer-events-none absolute right-0 bottom-0 w-64 opacity-25 transform translate-x-32 translate-y-48 `}
 `;
 
-export default () => {
+export function DashedBorderSixFeatures() {
   /*
    * This componets has an array of object denoting the cards defined below. Each object in the cards array can have the key (Change it according to your need, you can also add more objects to have more cards in this feature component):
    *  1) imageSrc - the image shown at the top of the card
@@ -65,20 +65,24 @@ export default () => {
   const cards = [
     {
       imageSrc: ShieldIconImage,
-      title: "Ads Management",
-      description: "We create and manage ads that you need, from creation to deployment. Lorem ipsum donor sit amet consicou."
+      title: "Verify Ownership",
+      description: "We verify onchain that you atually own the NFT."
     },
-    { imageSrc: SupportIconImage, title: "Video Marketing" },
-    { imageSrc: CustomizeIconImage, title: "Customer Relation" },
+    { imageSrc: FastIconImage, title: "Mint", 
+    description: "Mint your NFP Token that proves ownership for your NFT."},
+    { imageSrc: CustomizeIconImage, title: "Set Owner", 
+    description:"Set your other wallet address as owner." },
+    /*
     { imageSrc: ReliableIconImage, title: "Product Outreach" },
-    { imageSrc: FastIconImage, title: "PR Campaign" },
+    { imageSrc: , title: "PR Campaign" },
     { imageSrc: SimpleIconImage, title: "Product Expansion" }
+    */
   ];
 
   return (
     <Container>
       <ThreeColumnContainer>
-        <Heading>Our Professional <span tw="text-primary-500">Services</span></Heading>
+        <Heading>Our Simple <span tw="text-primary-500">Process</span></Heading>
         {cards.map((card, i) => (
           <Column key={i}>
             <Card>
