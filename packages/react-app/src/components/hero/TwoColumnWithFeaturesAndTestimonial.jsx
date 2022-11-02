@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import styled from "styled-components";
 import tw from "twin.macro";
 import { css } from "styled-components/macro"; //eslint-disable-line
@@ -10,7 +10,8 @@ import { Container, ContentWithVerticalPadding } from "../misc/Layouts.js";
 import { ReactComponent as CheckboxIcon } from "feather-icons/dist/icons/check-circle.svg";
 import { ReactComponent as QuotesLeftIconBase } from "../../images/quotes-l.svg"
 import { ReactComponent as SvgDecoratorBlob1 } from "../../images/dot-pattern.svg"
-import { useLocation } from "react-router-dom";
+
+import { useLocation, useHistory } from "react-router-dom";
 //const Header = tw(HeaderBase)`max-w-none`;
 const TRow = tw.div`flex flex-col lg:flex-row justify-between items-center lg:pt-16 max-w-screen-2xl mx-auto sm:px-8`;
 const TColumn = tw.div``;
@@ -37,6 +38,7 @@ const CustomerCompany = tw.p`mt-1 text-sm text-gray-500`
 
 
 
+
 export function TwoColumnWithFeaturesAndTestimonial({
   heading = "Non-Fungible Proof",
   description = "Keep your NFTs safe. Prove Ownership from any wallet.",
@@ -52,7 +54,15 @@ export function TwoColumnWithFeaturesAndTestimonial({
     customerCompany: "Delos Inc."
   }
 }) {
+  let history = useHistory()
   const buttonRoundedCss = buttonRounded && tw`rounded-full`;
+
+  const handleEnter = () => {
+      if (window.confirm(`By Using/Entering the app you are agreeing to our Terms & Conditions and Privacy Policy. You can find this on the bottom of each page.`)) {
+        history.push('/searchnft')
+      }
+  }
+
   /*const navLinks = [
     <NavLinks key={1}>
       <NavLink href="/#">About</NavLink>
@@ -70,7 +80,7 @@ export function TwoColumnWithFeaturesAndTestimonial({
       </PrimaryLink>
     </NavLinks>*
   ];*/
-  
+  //<PrimaryButton as="a" href={primaryButtonUrl} css={buttonRoundedCss} ></PrimaryButton>
   return (
     <>
       <Container>
@@ -79,7 +89,7 @@ export function TwoColumnWithFeaturesAndTestimonial({
             <TextColumn>
               <Heading>{heading}</Heading>
               <Description>{description}</Description>
-              <PrimaryButton as="a" href={primaryButtonUrl} css={buttonRoundedCss}>
+              <PrimaryButton css={buttonRoundedCss} onClick={handleEnter}>
                 {primaryButtonText}
               </PrimaryButton>
               <FeatureList>
@@ -95,7 +105,6 @@ export function TwoColumnWithFeaturesAndTestimonial({
               <ImageContainer>
                 <Image src={imageSrc} />
                 {imageDecoratorBlob && <ImageDecoratorBlob />}
-                
               </ImageContainer>
               <Offsetbackground />
             </ImageColumn>

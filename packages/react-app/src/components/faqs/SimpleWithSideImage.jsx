@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+//import { motion } from "framer-motion";
 import tw from "twin.macro";
 import styled from "styled-components";
 import { css } from "styled-components/macro"; //eslint-disable-line
-import { SectionHeading, Subheading as SubheadingBase } from "components/misc/Headings.js";
+import { SectionHeading, Subheading as SubheadingBase } from "../misc/Headings.js";
 import { ReactComponent as PlusIcon } from "feather-icons/dist/icons/plus.svg";
 import { ReactComponent as MinusIcon } from "feather-icons/dist/icons/minus.svg";
 
@@ -35,41 +35,42 @@ const QuestionToggleIcon = styled.span`
     ${tw`w-4 h-4`}
   }
 `;
-const Answer = motion(tw.dd`pointer-events-none text-sm sm:text-base leading-relaxed`);
+//const RealAnswer = motion(tw.dd`pointer-events-none text-sm sm:text-base leading-relaxed`)
+const Answer = tw.dd`pointer-events-none text-sm sm:text-base leading-relaxed`
 
-export default ({
+const initialImage = "https://images.unsplash.com/photo-1579427421635-a0015b804b2e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1024&q=80"
+
+export function SimpleWithSideImage ({
   subheading = "",
-  heading = "Questions",
-  description = "Here are some frequently asked questions about our hotels from our loving customers. Should you have any other questions, feel free to reach out via the contact form below.",
-  imageSrc = "https://images.unsplash.com/photo-1579427421635-a0015b804b2e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1024&q=80",
+  heading = "How It Works",
+  description = "",
+  imageSrc = "https://ipfs.io/ipfs/bafkreiguwg3qhiyjs44rwg74q7rxog62ni4xctzhshlap2e7suvx7sxr7m",
   imageContain = false,
   imageShadow = true,
   faqs = null
-}) => {
+}) {
   /*
    * You can modify FAQs either by modifying the below defaultFaqs array or by passing a custom array of FAQs using
    * the faqs prop
    */
   const defaultFaqs = [
     {
-      question: "Is lunch provided free of cost ?",
+      question: "Verify Ownership ",
       answer:
-        "Yes, it is, if you have a membership with us. Otherwise it is charged as per the menu. Some limits do apply as to how much items can be included in your lunch. This limit is enough for any one person and merely exists to discourage abusal of the system."
+        "We verify that the wallet address that is minting the Non-Fungible Proof Token owns the underlying NFT."
     },
     {
-      question: "Do you have 2 Bedroom suites ?",
+      question: "Mint NFP Token",
       answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        "The contract will mint an NFP Token. This token will look exactly like your NFT but it is NOT the same token. It is a soulbound token that represents ownership over the underlying NFT. A soulbound token cannot be transferred and it can only be minted by the real owner."
     },
     {
-      question: "Are Wi-Fi costs included in the price ?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-    },
+      question: "View Token and Set Owner",
+      answer: "View your token and set another wallet address as an owner of the NFT. Choose a wallet you have access and for a duration that makes sense. Be careful! If you set it to someone else's address they might get your airdrop or you could miss your event."
+    }, 
     {
-      question: "Where can I reach you for support ?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+      question: "Ownership of the underlying NFT Changes",
+      answer: "After ownership of an NFT changes, the NFP token is immediately marked as invalid (so that it cannot receive airdrops or pass token gating). The new owner of that NFT can now burn the old NFP and mint one for themselves."
     }
   ];
 
@@ -106,7 +107,7 @@ export default ({
                     <Question>
                       <QuestionText>{faq.question}</QuestionText>
                       <QuestionToggleIcon>
-                        {activeQuestionIndex === index ? <MinusIcon /> : <PlusIcon />}
+                        {activeQuestionIndex === index ? <PlusIcon /> : <PlusIcon />}
                       </QuestionToggleIcon>
                     </Question>
                     <Answer
