@@ -32,6 +32,8 @@ import externalContracts from "./contracts/external_contracts";
 import deployedContracts from "./contracts/hardhat_contracts.json";
 import { Transactor, Web3ModalSetup } from "./helpers";
 import { Home, ExampleUI, Hints, Subgraph, Minter, MintSamples, Burner, ViewProof, MyNFPs, EditProof, BurnProof, SearchNFT, YourCollectibles, NFPMinter } from "./views";
+import {PrivacyPolicy} from "./components/pages/PrivacyPolicy";
+import { TermsOfService } from "./components/pages/TermsOfService";
 import { useStaticJsonRPC } from "./hooks";
 import { TwoColumnWithFeaturesAndTestimonial as Hero } from "./components/hero/TwoColumnWithFeaturesAndTestimonial"
 import Footer from "./components/footers/MiniCenteredFooter.js";
@@ -258,11 +260,11 @@ function App(props) {
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
   return (
-    <div className = "App">
-      {location.pathname == '/' && <GlobalStyles />}
+    <div className= "App">
+      {location.pathname == '/' || location.pathname =='/privacypolicy' || location.pathname =='/terms' && <GlobalStyles />}
       {/* ✏️ Edit the header and change the title to your project name */}
       {
-        location.pathname !== '/' &&
+        location.pathname !== '/' && location.pathname !=='/privacypolicy' && location.pathname !=='/terms' &&
       <>
       <Header>
         {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
@@ -332,6 +334,9 @@ function App(props) {
         <Route exact path="/">
           <Home />
         </Route>
+        <Route exact path="/privacypolicy">
+          <PrivacyPolicy />
+        </Route>
         <Route exact path="/debug">
           {/*
                 🎛 this scaffolding is full of commonly used components
@@ -392,6 +397,7 @@ function App(props) {
             mainnetProvider={mainnetProvider}
             price={price}
           />
+        
         </Route>
         <Route path="/exampleui">
           <ExampleUI
@@ -587,7 +593,7 @@ function App(props) {
     
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
       
-        <Row align="middle" gutter={[4, 4]}>
+        <Row  gutter={[4, 4]}>
           <Col span={24}>
             {
               /*  if the local provider has a signer, let's show the faucet:  */
@@ -599,9 +605,7 @@ function App(props) {
             }
           </Col>
         </Row>
-
       <Footer />
-      
     </div>
   );
 }
