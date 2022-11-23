@@ -30,7 +30,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //15 eth on ropsten
 const defaultNetwork = "goerli";
 
-const mainnetGwei = 21;
+const mainnetGwei = 25;
 
 function mnemonic() {
   try {
@@ -105,7 +105,6 @@ module.exports = {
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.GOERLI_INFURA_KEY}`, // <---- This is my infura goerli id)
-      //      url: "https://speedy-nodes-nyc.moralis.io/XXXXXXXXXXXXXXXXXXXXXXXXX/eth/goerli", // <---- YOUR MORALIS ID! (not limited to infura)
       accounts: {
         mnemonic: mnemonic(),
       },
