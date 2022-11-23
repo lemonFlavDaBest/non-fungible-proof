@@ -154,6 +154,14 @@ export default function EditProof({
   return (
     
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+      <Row justify='center'>
+      <Space direction="vertical">
+            <Typography.Title
+                            level={2} style ={{color: '#460fb3'}}
+                        >Set Wallet as Owner</Typography.Title>
+            
+        </Space>  
+      </Row>
       <Row gutter={16}>
         <Col span={12}>
           <Card title="Owner Info:" bordered={false}>
