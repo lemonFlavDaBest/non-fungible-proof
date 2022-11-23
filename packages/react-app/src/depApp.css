@@ -1,0 +1,39 @@
+.App {
+  text-align: center;
+  padding-left: calc(100vw - 100%);
+}
+
+.space-align-container-cards {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:start;
+}
+
+.space-align-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.space-align-block {
+  flex: none;
+  margin: 8px 4px;
+  padding: 4px;
+  border: 1px solid #40a9ff;
+}
+
+.container-vertical {
+  flex-direction: column;
+}
+
+.container-horizontal {
+  flex-direction:horizontal;
+}
+
+
+.container {
+  display: flex; /*or inline flex*/
+}
+/*
+.space-center-align-container{
+
+}*/
