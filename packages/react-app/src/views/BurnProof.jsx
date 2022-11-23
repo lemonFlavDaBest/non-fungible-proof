@@ -61,8 +61,8 @@ export default function BurnProof({
   const {proof_id}= useParams();
   const ownerObject = useContractReader(readContracts, "NFProof", "_owners", [proof_id]);
   const userOfProof = useContractReader(readContracts, "NFProof", "userOf", [proof_id]);
-  const validateOwner = useContractReader(readContracts, "NFProof", "isValidOwner", [proof_id]);
-  const validateUser = useContractReader(readContracts, "NFProof", "isValidUserToken", [proof_id]);
+  //const validateOwner = useContractReader(readContracts, "NFProof", "isValidOwner", [proof_id]);
+  //const validateUser = useContractReader(readContracts, "NFProof", "isValidUserToken", [proof_id]);
   const ownerAddress = ownerObject && ownerObject.proofTokenId.toNumber && ownerObject.owner;
   const nftCollection = ownerObject && ownerObject.proofTokenId.toNumber && ownerObject.originalContract
   const originalTokenId = ownerObject && ownerObject.proofTokenId.toNumber && ownerObject.originalTokenId
@@ -145,6 +145,13 @@ export default function BurnProof({
 
   return (
     <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+      <Row justify='center'>
+     
+            <Typography.Title
+                            level={2} style ={{color: '#460fb3'}}
+                        >NFP Token Burner</Typography.Title>
+            
+      </Row>
       <Row gutter={16}>
         <Col span={12}>
           <Card title="Owner Info:" bordered={false}>
@@ -186,12 +193,16 @@ export default function BurnProof({
         </Col>
         <Col span={12}>
     <Card title="Burn NFP Token" bordered={true}>
-            Burning this token <Text strong>will not </Text> burn the underlying asset
+            Burning this token <Text strong>will not </Text> burn the underlying asset.
             <br></br>
             
             <br></br>
-            You can always mint another NFP after burning it
-            <Divider />{
+            You can always mint another NFP after burning it.
+            <Divider />
+            <Text type='secondary'>Burning will cost a small fee (.000000001 ether) to avoid spam.</Text>
+            <br></br>
+            <br></br>
+            {
               isNFPOwner?
             <Button type="primary" danger onClick={handleClick} loading={loadingState}>BURN</Button>:
             <Button type="primary" danger disabled>BURN</Button>
