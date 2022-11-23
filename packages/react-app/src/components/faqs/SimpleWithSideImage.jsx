@@ -55,14 +55,14 @@ export function SimpleWithSideImage ({
    */
   const defaultFaqs = [
     {
-      question: "Verify Ownership ",
+      question: "Verify Proof of Ownership ",
       answer:
         "We verify that the wallet address that is minting the Non-Fungible Proof Token owns the underlying NFT."
     },
     {
       question: "Mint NFP Token",
       answer:
-        "The contract will mint an NFP Token. This token will look exactly like your NFT but it is NOT the same token. It is a soulbound token that represents ownership over the underlying NFT. A soulbound token cannot be transferred and it can only be minted by the real owner."
+        "The contract will mint an NFP Token. This token will look exactly like your NFT but it is NOT the same token. It is a soulbound token that proves ownership over the underlying NFT. A soulbound token cannot be transferred and it can only be minted by the real owner."
     },
     {
       question: "View Token and Set Owner",
