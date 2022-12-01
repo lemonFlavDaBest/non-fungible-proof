@@ -1,39 +1,9 @@
 
-
-/*<Col span={6}>
-    <Card title="Edit User" bordered={false}>
-        <p>Give Proof of Ownersip to an address</p>
-            <AddressInput
-                ensProvider={mainnetProvider}
-                placeholder="enter address"
-                value={ownershipToAddresses[proofTokensId]}
-                onChange={newValue => {
-                    const update = {};
-                    update[proofTokensId] = newValue;
-                    setOwnershipToAddresses({ ...ownershipToAddresses, ...update });
-                    }}
-            />
-        <p>When do you want this to expire?</p>
-            <DatePicker
-                style={{
-                    width: '50%',
-                    }}
-                onChange ={onDateChange}
-                />
-            <Button
-                onClick={() => {
-                    console.log("writeContracts", writeContracts);
-                    tx(writeContracts.NFProof.setUser(proofTokensId,  ownershipToAddresses[proofTokensId], expiryTime));
-                    }}
-                >
-                    Set as Proof of Ownership
-            </Button>
-
-    </Card>
-</Col>
-*/
 import { Typography, Button, Card, DatePicker, Divider, Input, Progress, Slider, Space, Switch, Image, Row, Col, Descriptions, Badge, Result} from "antd";
 import React, { useState, useEffect, useCallback } from "react";
+import tw from "twin.macro";
+import { ReactComponent as SvgDecoratorBlob1 } from "../images/svg-decorator-blob-4.svg";
+import { ReactComponent as SvgDecoratorBlob2 } from "../images/svg-decorator-blob-5.svg";
 import { utils, BigNumber } from "ethers";
 import { SyncOutlined } from "@ant-design/icons";
 import { useParams, Link, useHistory } from "react-router-dom";
@@ -57,6 +27,8 @@ export default function BurnProof({
   readContracts,
   writeContracts,
 }) {
+  const Container = tw.div`relative`;
+  const Content = tw.div`max-w-screen-xl mx-auto py-8 lg:py-8`;
   let history = useHistory()
   const {proof_id}= useParams();
   const ownerObject = useContractReader(readContracts, "NFProof", "_owners", [proof_id]);
@@ -78,6 +50,13 @@ export default function BurnProof({
   const ownerOGToken = ownerObject && ownerObject.proofTokenId.toNumber && ownerObject.originalTokenId;
   const [isNFPOwner, setIsNFPOwner] = useState(false);
   const [loadingState, setLoadingState] = useState(false)
+
+  const DecoratorBlob1 = tw(
+    SvgDecoratorBlob1
+  )`absolute w-32 top-0 left-0 -z-10 text-primary-500 opacity-25 transform -translate-x-full`;
+  const DecoratorBlob2 = tw(
+    SvgDecoratorBlob2
+  )`absolute w-32 bottom-0 right-0 -z-10 text-pink-500 opacity-15 transform translate-x-2/3 translate-y-8`;
 
   const handleClick = async() => {
     if (window.confirm("Are you sure? you can always mint another :)")){
@@ -144,7 +123,9 @@ export default function BurnProof({
   }, [address, ownerAddress, getMetadata])
 
   return (
-    <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
+    <Container>
+    <Content>
+    
       <Row justify='center'>
      
             <Typography.Title
@@ -192,26 +173,37 @@ export default function BurnProof({
             />  
         </Col>
         <Col span={12}>
-    <Card title="Burn NFP Token" bordered={true}>
+        <Row justify= 'center'>
+        <Card title="Burn NFP Token" bordered={true}>
+            <>
             Burning this token <Text strong>will not </Text> burn the underlying asset.
-            <br></br>
             
-            <br></br>
             You can always mint another NFP after burning it.
             <Divider />
             <Text type='secondary'>Burning will cost a small fee (.000000001 ether) to avoid spam.</Text>
-            <br></br>
-            <br></br>
+            <Divider />
+            <Row justify= 'center'>
             {
               isNFPOwner?
             <Button type="primary" danger onClick={handleClick} loading={loadingState}>BURN</Button>:
             <Button type="primary" danger disabled>BURN</Button>
+            
             }
-
-    </Card>
-</Col>
+            </Row>
+            </>
+        </Card>
       </Row>
-      </Space>
+      </Col>
+      </Row>
+            
+      
+      </Content>
+      <DecoratorBlob1 />
+      <DecoratorBlob2 />
+
+      </Container>
+
+      
     
   );
 }
