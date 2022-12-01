@@ -143,6 +143,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     //validates a wallet as the owner of a specific token from an nft collection
+    //might be able to turn into the event/emit stuff
     function validateOwnerUser(address originContract, uint256 originTokenId) external view returns (bool){
         uint256 proofToken = tokenToToken[originContract][originTokenId];
         require(_exists(proofToken), "this token does not exist or has been burned");
