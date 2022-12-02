@@ -174,7 +174,7 @@ export default function BurnProof({
         </Col>
         <Col span={12}>
         <Row justify= 'center'>
-        <Card title="Burn NFP Token" bordered={true}>
+        <Card bordered={true}>
             <>
             Burning this token <Text strong>will not </Text> burn the underlying asset.
             
