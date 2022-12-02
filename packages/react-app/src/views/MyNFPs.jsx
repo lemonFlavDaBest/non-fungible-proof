@@ -142,7 +142,7 @@ export default function MyNFPs({
 
   useEffect(() => {
     //I want this function to get more information about each token, such as the user, expiry, setuser, what the token represents
-    //use this mapping
+    
     const updateUserTokens = async () => {
     const userInfo = [];
     for(let i = 0; i <yourProofTokens.length; i++) {
@@ -163,15 +163,6 @@ export default function MyNFPs({
   }
   updateUserTokens()
   }, [yourProofTokens])
-
-  const onDateChange = (date, dateString) => {
-    console.log(date, dateString);
-    const reformDate = new Date(dateString);
-    const timestampInSeconds = Math.floor(reformDate.getTime() / 1000);
-    setExpiryTime(timestampInSeconds);
-    console.log("UNIX TimeStamp:", timestampInSeconds);
-    return timestampInSeconds;
-  };
 
   const onChange = () => {
     setLoadingState(true)
@@ -207,7 +198,7 @@ export default function MyNFPs({
                   const validateObject = validateTokens.find(({proofTokenId}) => proofTokenId == proofTokensId)
                   
                   return (
-                    <div >
+                    <div>
                     <List.Item key={proofTokensId}>
                       
                         <Row gutter={12}>
@@ -220,33 +211,38 @@ export default function MyNFPs({
                               }
                               bordered = {false}
                             >
-                              <Row>
+                              <Row gutter={12}>
                               <Col>
                               
-                                <h3>Non-Fungible Proof Token Id: {proofTokensId}</h3>
+                              <Space direction='vertical'>
+                                <Row justify='center'>
+                                <Paragraph style ={{color:'#3c0d99'}}> <Text strong>NFP Token </Text>#{proofTokensId}</Paragraph>
+                                </Row>
+                                <Row justify='center'>
+                                  <Text strong>Proof of Token:</Text>
+                                </Row>
+                                <Row>
+                                <Paragraph>From Contract:
+                                  <Address 
+
+                                    address = {ownerObject && ownerObject.originalContract ? ownerObject.originalContract : null}
+                                    ensProvider={mainnetProvider}
+                                    fontSize={16}
+                                    />
+                                </Paragraph>
                                 
-                                <Link to={`/viewproof/${proofTokensId}`} style ={{color: '#434190'}}>View Token</Link>
-
+                                <Paragraph>Token ID:{ownerObject && ownerObject.originalTokenId&& ownerObject.originalTokenId.toNumber ? ownerObject.originalTokenId.toNumber() : null}</Paragraph>
+                                </Row>
+                                <Row justify='center'>
+                                  <Link to={`/viewproof/${proofTokensId}`} style ={{color: '#434190'}}>View Token</Link>
+                                </Row>
+                                
+                              </Space>  
                               </Col>
                               
                               </Row>
-                              <Row>
-                              <Col>
-                              
-                              <Row justify='center'>
-                                <Text strong>Token Owned</Text>
-                              </Row>
-                              
-                              <Paragraph>Proof of Ownership of Token ID: {ownerObject && ownerObject.originalTokenId ? ownerObject.originalTokenId.toNumber() : null}</Paragraph>
 
-                              From Contract: 
-                              <Address 
-                                address = {ownerObject && ownerObject.originalContract ? ownerObject.originalContract : null}
-                                ensProvider={mainnetProvider}
-                                fontSize={16}
-                                />
-                              </Col>
-                              </Row>
+
                               
                               
 
@@ -257,16 +253,31 @@ export default function MyNFPs({
                           <Card
                         title={
                           <div>
-                            <span style={{ fontSize: 16, marginRight:8, color: '#3c0d99' }}>User Info</span>
+                            <span style={{ fontSize: 16, marginRight:8, color: '#3c0d99' }}>Owner Wallets</span>
                           </div>
                         }
                         bordered = {false}
-                      >
-                          <Address
+                      >   
+                          <Row>
+                          <Col>
+                          
+                          <Row>
+                          <Text strong>Minter:</Text> <Address
+                            address={address}
+                            ensProvider={mainnetProvider}
+                            fontSize={12}
+                          />
+                          </Row>
+                          <Row>
+                          <Text strong>Delegated Owner: </Text> {userObject && userObject.user > 0 ? <Address
                             address={userObject && userObject.user > 0 ? userObject.user : null}
                             ensProvider={mainnetProvider}
-                            fontSize={16}
-                          />
+                            fontSize={12}
+                          />: <Text disabled>No wallet assigned</Text>}
+                          </Row>
+                          
+                          </Col>
+                          </Row>
                           
                       </Card>
                           </Col>
