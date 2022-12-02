@@ -84,24 +84,35 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         ercMintPrice = 1 ether;
      }
 
+    //this function will run once and only once the contract is deployed, setting the burner address
     function init(address newBurnerAddress) public onlyOwner {
-        require(initVar=true, "this has already been run");
+        require(initVar==true, "this has already been run");
         burnerAddress = newBurnerAddress;
         initVar = false;
     }
 
+    //this set the mint price in ETH
     function setMintPrice(uint256 newPrice) external onlyOwner {
         mintPrice = newPrice;
     }
 
+    // sets the erc token that we would like to pay with
     function setToken(address new_token_addr) external onlyOwner{
         token = IERC20(new_token_addr);
     }
 
+    //sets what we want the mint price to be for the erc token
     function setTokenMintPrice(uint256 newPrice) external onlyOwner {
         ercMintPrice = newPrice;
     }
 
+    //can set the burner address for the burn function. just in case.
+    function setBurner(address newBurnerAddress) external onlyOwner {
+        burnerAddress = newBurnerAddress;
+    }
+
+    //this will allow you to pay for an array of tokens from one contract
+    //this could be useful for projects that would like to pay for their community
     function payWithERC(uint256 tokenInput, address originContractAddress, uint256[] memory originTokenIds) external {
         uint256 totalPrice = ercMintPrice*originTokenIds.length;
         require(tokenInput >=totalPrice, "you didn't pay enough for all of these mints");
@@ -116,6 +127,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     //bulk pay an array of tokens
+    //same as aboce except in eth
     function payForMints(address originContractAddress, uint256[] memory originTokenIds) external payable {
         uint256 totalPrice = mintPrice*originTokenIds.length;
         require(msg.value >=totalPrice, "you didn't pay enough for all of these mints");
@@ -127,6 +139,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         }
     }
 
+    //takes in a token Id and will return true if their is a valid user assigned and the ower is valid as well. 
     function isValidUserToken(uint256 tokenId) external view returns (bool) {
         if( uint256(_users[tokenId].expires) >=  block.timestamp){
             OwnerInfo memory verifyOwner = _owners[tokenId];
@@ -136,6 +149,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         return false;
     }
 
+    //checks to see if the current owner of the proof token is the owner of the actual NFT
     function isValidOwner(uint256 tokenId) public view returns(bool) {
         OwnerInfo memory verifyOwner = _owners[tokenId];
         require(IERC721(verifyOwner.originalContract).ownerOf(verifyOwner.originalTokenId) == verifyOwner.owner, "This item has been sold and/or transferred");
@@ -143,7 +157,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     //validates a wallet as the owner of a specific token from an nft collection
-    //might be able to turn into the event/emit stuff
     function validateOwnerUser(address originContract, uint256 originTokenId) external view returns (bool){
         uint256 proofToken = tokenToToken[originContract][originTokenId];
         require(_exists(proofToken), "this token does not exist or has been burned");
