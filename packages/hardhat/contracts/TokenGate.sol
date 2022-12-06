@@ -16,9 +16,15 @@ contract TokenGate is Ownable {
 
     constructor(address payable proofContract) {
       nfProof = NFProof(proofContract);
+      gatePrice = 0;
     }
    
+    function setGatePrice(uint256 newPrice) external onlyOwner {
+      gatePrice=newPrice;
+    }
+
     function enterGate(bytes32 eventName, uint16 passcode, address originContractAddress, uint256 originTokenId) external payable returns (bytes32) {
+      require(msg.value >= gatePrice, "You have not paid to enter" );
       if (nfProof.validateVerifyUser(originContractAddress, originTokenId, msg.sender) == true){
         bytes32 eventHash = keccak256(abi.encode(eventName, passcode));
         emit EnterGate(eventName, eventHash, msg.sender, block.timestamp, originContractAddress, originTokenId);
