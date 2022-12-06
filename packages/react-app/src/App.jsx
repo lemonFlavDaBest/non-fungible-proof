@@ -388,6 +388,28 @@ function App(props) {
             contractConfig={contractConfig}
             chainId={selectedChainId}
           />
+          <Contract
+            name="TokenGate"
+            price={price}
+            signer={userSigner}
+            mainnetProvider={mainnetProvider}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+            contractConfig={contractConfig}
+            chainId={selectedChainId}
+          />
+          <Contract
+            name="AirdropFinder"
+            price={price}
+            signer={userSigner}
+            mainnetProvider={mainnetProvider}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+            contractConfig={contractConfig}
+            chainId={selectedChainId}
+          />
           
         </Route>
         <Route path="/hints">
