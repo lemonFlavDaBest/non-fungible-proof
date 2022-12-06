@@ -78,7 +78,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
 
 
     constructor(address token_addr) ERC721("NonFungibleProof","NFP"){
-        mintPrice = 1000000000000000; //.001 ether
+        mintPrice = 100000000000000; //.0001 ether
         initVar=true;
         token = IERC20(token_addr);
         ercMintPrice = 1 ether;
@@ -127,7 +127,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     //bulk pay an array of tokens
-    //same as aboce except in eth
+    //same as above except in eth
     function payForMints(address originContractAddress, uint256[] memory originTokenIds) external payable {
         uint256 totalPrice = mintPrice*originTokenIds.length;
         require(msg.value >=totalPrice, "you didn't pay enough for all of these mints");
@@ -139,14 +139,15 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         }
     }
 
-    //takes in a token Id and will return true if their is a valid user assigned and the ower is valid as well. 
+    //takes in a token Id and will return true if their is a valid user assigned and the owner is valid as well. 
     function isValidUserToken(uint256 tokenId) external view returns (bool) {
         if( uint256(_users[tokenId].expires) >=  block.timestamp){
             OwnerInfo memory verifyOwner = _owners[tokenId];
             require(IERC721(verifyOwner.originalContract).ownerOf(verifyOwner.originalTokenId) == verifyOwner.owner, "This item has been sold and transferred");
             return true;
-        }
+        } else {
         return false;
+        }
     }
 
     //checks to see if the current owner of the proof token is the owner of the actual NFT
@@ -181,7 +182,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     /// @param expires  UNIX timestamp, The new user could use the NFT before expires
     function setUser(uint256 tokenId, address user, uint64 expires) public override virtual{
         require(_isApprovedOrOwner(msg.sender, tokenId),"ERC721: transfer caller is not owner nor approved");
-        require(userOf(tokenId)==address(0),"User already assigned");
+        require(userOf(tokenId)==address(0),"User already assigned.");
         require(isValidOwner(tokenId) == true, "Cannot set user if you do not own the underlying asset");
         require(expires > block.timestamp, "expires should be in future");
         UserInfo storage info =  _users[tokenId];
@@ -200,8 +201,9 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     function userOf(uint256 tokenId) public view override virtual returns(address){
         if( uint256(_users[tokenId].expires) >=  block.timestamp){
             return _users[tokenId].user; 
-        }
+        } else {
         return address(0);
+        }
     }
 
     /// @notice Get the user expires of an NFT
