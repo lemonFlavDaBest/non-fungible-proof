@@ -345,17 +345,6 @@ function App(props) {
             */}
 
           <Contract
-            name="ApeSample"
-            price={price}
-            signer={userSigner}
-            mainnetProvider={mainnetProvider}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-            chainId={selectedChainId}
-          />
-          <Contract
             name="NFProof"
             price={price}
             signer={userSigner}
