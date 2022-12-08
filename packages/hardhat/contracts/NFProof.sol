@@ -62,8 +62,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     uint256 public mintPrice;
     bool private initVar;
     address public burnerAddress;
-    IERC20 token; //instantiates the imported contract
-    uint256 public ercMintPrice;
 
     event Mint(uint256 tokenId, address minter);
     event Burn(uint256 tokenId);
@@ -77,11 +75,9 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     mapping(uint256 => bool) private tokenIsBurning;
 
 
-    constructor(address token_addr) ERC721("NonFungibleProof","NFP"){
+    constructor() ERC721("NonFungibleProof","NFP"){
         mintPrice = 100000000000000; //.0001 ether
         initVar=true;
-        token = IERC20(token_addr);
-        ercMintPrice = 1 ether;
      }
 
     //this function will run once and only once the contract is deployed, setting the burner address
@@ -96,38 +92,12 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         mintPrice = newPrice;
     }
 
-    // sets the erc token that we would like to pay with
-    function setToken(address new_token_addr) external onlyOwner{
-        token = IERC20(new_token_addr);
-    }
-
-    //sets what we want the mint price to be for the erc token
-    function setTokenMintPrice(uint256 newPrice) external onlyOwner {
-        ercMintPrice = newPrice;
-    }
-
     //can set the burner address for the burn function. just in case.
     function setBurner(address newBurnerAddress) external onlyOwner {
         burnerAddress = newBurnerAddress;
     }
 
-    //this will allow you to pay for an array of tokens from one contract
-    //this could be useful for projects that would like to pay for their community
-    function payWithERC(uint256 tokenInput, address originContractAddress, uint256[] memory originTokenIds) external {
-        uint256 totalPrice = ercMintPrice*originTokenIds.length;
-        require(tokenInput >=totalPrice, "you didn't pay enough for all of these mints");
-        (bool tranSucc) = token.transferFrom(msg.sender, address(this), tokenInput);
-        require(tranSucc, "transfer failed");
-        for (uint i = 0; i < originTokenIds.length; i++) {
-            require(!tokenHasMinted[originContractAddress][originTokenIds[i]], "token already minted");
-            require(!tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]], "token already paid for");
-            require(IERC721(originContractAddress).ownerOf(originTokenIds[i]) != address(0), "This token doesn't exist");
-            tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]] = true;
-        }
-    }
-
-    //bulk pay an array of tokens
-    //same as above except in eth
+    //bulk pay an array of tokens in eth. allows other people (ie possibly project owners to pay for their community
     function payForMints(address originContractAddress, uint256[] memory originTokenIds) external payable {
         uint256 totalPrice = mintPrice*originTokenIds.length;
         require(msg.value >=totalPrice, "you didn't pay enough for all of these mints");
@@ -153,6 +123,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     //checks to see if the current owner of the proof token is the owner of the actual NFT
     function isValidOwner(uint256 tokenId) public view returns(bool) {
         OwnerInfo memory verifyOwner = _owners[tokenId];
+        require(_exists(tokenId), "this token doesn't exist");
         require(IERC721(verifyOwner.originalContract).ownerOf(verifyOwner.originalTokenId) == verifyOwner.owner, "This item has been sold and/or transferred");
         return true;
     }
@@ -166,7 +137,8 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         return true;
     }
 
-    //works similar to above function, accept that it is attempting to verify a specific address
+    //works similar to above function, accept that it is attempting to verify a specific address. other contracts could utilize this
+    //to verify their users hot wallet. 
     function validateVerifyUser(address originContract, uint256 originTokenId, address verifyAddress) external view returns (bool){
         uint256 proofToken = tokenToToken[originContract][originTokenId];
         require(_exists(proofToken), "this token does not exist or has been burned");
@@ -221,14 +193,26 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     //will find the wallet address that is set as owner given a contract address and tokenId
-    //if no valid user is set as owner, will return false
+    //if no valid user is set as owner will return nothing
     function findValidUserProofToken(address originContractAddress, uint256 originTokenId) external view returns (address){
         uint256 proofToken = tokenToToken[originContractAddress][originTokenId];
         require(userOf(proofToken) != address(0), "No valid user assigned");
-        require(isValidOwner(proofToken) == true, "Token has been transferred");
+        require(isValidOwner(proofToken) == true, "This proof token does not have a valid owner");
         return userOf(proofToken);
     }
 
+    //similar to the above function but always returns an address. it will either return the correct 
+    //addres  or it will return  address(0) if there is not a valid proof token with valid user assigned
+    function findUserToken(address originContractAddress, uint256 originTokenId) external view returns (address){
+        uint256 proofToken = tokenToToken[originContractAddress][originTokenId];
+        if(isValidOwner(proofToken) == true) {
+        return userOf(proofToken);
+        } else {
+        return address(0);
+        }
+    }
+
+    //MEOW delete the approve function her
     //this willl mint one nft. checks in order 1) if you paid enough for mint 2) if you are the owner of the nft
     //3) check to see if that token has already been minted. 4) make sure your not minting proof of itself. 5. update the owner info in storage.
     function safeMint(address originContractAddress, uint256 originTokenId) public payable returns (uint256){
@@ -240,7 +224,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         uint256 tokenId = _tokenIdCounter.current();
         tokenIsMinting[tokenId] = true;
         _safeMint(msg.sender, tokenId);
-        approve(burnerAddress, tokenId);
         OwnerInfo storage info =  _owners[tokenId];
         info.owner = msg.sender;
         info.originalContract = originContractAddress;
@@ -287,11 +270,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         address owner = msg.sender;
         (bool succ, )= owner.call{value:address(this).balance}("");
         require(succ, "withdraw failed");
-    }
-
-    function ercWithdraw() external onlyOwner returns (uint256 tokenAmount) {
-        require(token.transfer(msg.sender, token.balanceOf(address(this))));
-        return (token.balanceOf(address(this)));
     }
  
     function _beforeTokenTransfer(
