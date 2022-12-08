@@ -171,7 +171,7 @@ export default function NFPMinter({
     
         /* look how you call setPurpose on your contract: */
         /* notice how you pass a call back for tx updates too */
-        const cost = utils.parseEther(".001");
+        const cost = utils.parseEther(".0001");
         setMintLoading(true)
         try{
         const result = tx(writeContracts.NFProof.safeMint(search_contract, search_token, {value: cost}), update => {
@@ -266,7 +266,7 @@ export default function NFPMinter({
   const contentList = {
 
     tab1: <Row justify='center'>
-          <Typography.Paragraph strong>Minting Costs <Typography.Text style={{color:'#5a13e6'}}>.001 Eth</Typography.Text></Typography.Paragraph>
+          <Typography.Paragraph strong>Minting Costs <Typography.Text style={{color:'#5a13e6'}}>.0001 Eth</Typography.Text></Typography.Paragraph>
           <br></br>
           <Typography.Paragraph>After minting you can set any any of your wallets as the offical owner.</Typography.Paragraph>
           <br></br>
