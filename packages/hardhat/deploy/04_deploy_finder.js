@@ -42,7 +42,7 @@ module.exports = async ({ getNamedAccounts, deployments, getChainId }) => {
   sleep(5000)
 
 
-console.log("DEPLOYEDADD");
+console.log("DEPLOYEDADDall");
 
 
 };
