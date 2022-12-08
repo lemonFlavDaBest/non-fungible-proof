@@ -104,7 +104,7 @@ export default function Minter({
             onClick={async () => {
               /* look how you call setPurpose on your contract: */
               /* notice how you pass a call back for tx updates too */
-              const cost = utils.parseEther(".01");
+              const cost = utils.parseEther(".0001");
               const result = tx(writeContracts.NFProof.safeMint(nftCollection, originalTokenId, {value: cost}), update => {
                 console.log("📡 Transaction Update:", update);
                 if (update && (update.status === "confirmed" || update.status === 1)) {
