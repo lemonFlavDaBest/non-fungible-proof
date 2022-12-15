@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -36,6 +36,9 @@ interface IERC4907 {
     function userExpires(uint256 tokenId) external view returns(uint256);
     
 }
+
+
+error SoulBound();
 
 
 contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
@@ -92,7 +95,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         mintPrice = newPrice;
     }
 
-    //can set the burner address for the burn function. just in case.
+    //can set the burner address for the burn function. just in case you need to alter any burn functionality in the future
     function setBurner(address newBurnerAddress) external onlyOwner {
         burnerAddress = newBurnerAddress;
     }
@@ -109,14 +112,13 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         }
     }
 
-    //takes in a token Id and will return true if their is a valid user assigned and the owner is valid as well. 
+    //takes in a token Id and will return true if there is a valid owner and user assigned
     function isValidUserToken(uint256 tokenId) external view returns (bool) {
-        if( uint256(_users[tokenId].expires) >=  block.timestamp){
-            OwnerInfo memory verifyOwner = _owners[tokenId];
-            require(IERC721(verifyOwner.originalContract).ownerOf(verifyOwner.originalTokenId) == verifyOwner.owner, "This item has been sold and transferred");
+        if(uint256(_users[tokenId].expires) >=  block.timestamp){
+            require(isValidOwner(tokenId) == true, "This item has been sold and transferred");
             return true;
         } else {
-        return false;
+            return false;
         }
     }
 
@@ -138,7 +140,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     //works similar to above function, accept that it is attempting to verify a specific address. other contracts could utilize this
-    //to verify their users hot wallet. 
+    //to verify their users wallet
     function validateVerifyUser(address originContract, uint256 originTokenId, address verifyAddress) external view returns (bool){
         uint256 proofToken = tokenToToken[originContract][originTokenId];
         require(_exists(proofToken), "this token does not exist or has been burned");
@@ -203,7 +205,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
 
     //similar to the above function but always returns an address. it will either return the correct 
     //addres  or it will return  address(0) if there is not a valid proof token with valid user assigned
-    function findUserToken(address originContractAddress, uint256 originTokenId) external view returns (address){
+    function findUserProofToken(address originContractAddress, uint256 originTokenId) external view returns (address){
         uint256 proofToken = tokenToToken[originContractAddress][originTokenId];
         if(isValidOwner(proofToken) == true) {
         return userOf(proofToken);
@@ -212,7 +214,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         }
     }
 
-    //MEOW delete the approve function her
+    
     //this willl mint one nft. checks in order 1) if you paid enough for mint 2) if you are the owner of the nft
     //3) check to see if that token has already been minted. 4) make sure your not minting proof of itself. 5. update the owner info in storage.
     function safeMint(address originContractAddress, uint256 originTokenId) public payable returns (uint256){
@@ -238,34 +240,76 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         return tokenId;
     }
 
-    function setApprovalForAll(address _operator, bool _approved) public view override(ERC721, IERC721) {
-        require(_operator == burnerAddress, "only allow approval to burnerAddress");
-        require(_approved == true, "this contract doesn't allow messing with approvals");
-        revert("This contract does not allow altering approvals");
-    }
-
+    //this effectively burns the token. it erases all information about the token but does not send it to the burner address
     function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external virtual {
         require(_exists(proofTokenId), "this token does not exist or has been burned");
         require(msg.sender == burnerAddress, "only the burner contract may call this function");
         require(tokenToToken[originContractAddress][originTokenId] == proofTokenId, "these do not represent the same token");
         delete _users[proofTokenId];
         delete _owners[proofTokenId];
-        tokenIsBurning[proofTokenId] = true;
-        _burn(proofTokenId);
         delete tokenToToken[originContractAddress][originTokenId];
+        tokenIsBurning[proofTokenId] = true;
         tokenHasMinted[originContractAddress][originTokenId] = false;
         tokenHasBeenPaidfor[originContractAddress][originTokenId] = false;
-        tokenIsBurning[proofTokenId] = false;
         emit Burn(proofTokenId);
+    }
+    
+    //if the owner of the token no longer wants it in their wallet, they can burn it themselves
+    function burnSelf(uint256 proofTokenId) external virtual {
+        require(msg.sender == ownerOf(proofTokenId), "you don't own the token");
+        _burn(proofTokenId);
+        tokenIsBurning[proofTokenId] = false;
+    }
+
+    /// --- Disabling Transfer Of Soulbound NFT --- ///
+    // this code is from @author 0xMouseLess
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function safeTransferFrom(address, address, uint256,bytes memory) public pure override (ERC721, IERC721) {
+        revert SoulBound();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function safeTransferFrom(address, address, uint256 ) public pure override (ERC721, IERC721) {
+        revert SoulBound();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function transferFrom(address, address, uint256) public pure override (ERC721, IERC721) {
+        revert SoulBound();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function approve(address, uint256) public pure override (ERC721, IERC721) {
+        revert SoulBound();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function setApprovalForAll(address, bool) public pure override (ERC721, IERC721) {
+        revert SoulBound();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function getApproved(uint256) public pure override (ERC721, IERC721) returns (address) {
+        revert SoulBound();
+    }
+
+    /// @notice Function disabled as cannot transfer a soulbound nft
+    function isApprovedForAll(address, address) public pure override (ERC721, IERC721) returns (bool) {
+        revert SoulBound();
     }
 
     /**
     * This token copies metadata from the original token. 
      */
+
     function tokenURI(uint256 tokenId) public view virtual override(ERC721, IERC721Metadata) returns (string memory) {
         return IERC721Metadata(_owners[tokenId].originalContract).tokenURI(_owners[tokenId].originalTokenId);
     }
 
+    /**
+    * allow the owner to withdraw the money 
+    */
     function mintWithdraw() external onlyOwner {
         address owner = msg.sender;
         (bool succ, )= owner.call{value:address(this).balance}("");
