@@ -14,3 +14,4 @@ export { default as SearchNFT } from "./SearchNFT";
 export { default as YourCollectibles } from  "./YourCollectibles";
 export { default as NFPMinter } from "./NFPMinter";
 export { default as CreateEventGate } from "./CreateEventGate";
+export { default as EnterEvent } from "./EnterEvent";
