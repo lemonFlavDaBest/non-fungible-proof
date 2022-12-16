@@ -28,7 +28,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 // Select the network you want to deploy to here:
 //goerli
 //15 eth on ropsten
-const defaultNetwork = "goerli";
+const defaultNetwork = "localhost";
 
 const mainnetGwei = 25;
 
@@ -162,13 +162,13 @@ module.exports = {
         l1: "mainnet",
       },
     },
-    kovanOptimism: {
-      url: "https://kovan.optimism.io",
+    goerliOptimism: {
+      url: "https://goerli.optimism.io",
       accounts: {
         mnemonic: mnemonic(),
       },
       companionNetworks: {
-        l1: "kovan",
+        l1: "goerli",
       },
     },
     localOptimism: {
