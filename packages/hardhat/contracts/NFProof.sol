@@ -74,7 +74,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     mapping(address => mapping(uint256 => uint256)) public tokenToToken;
     mapping(address => mapping(uint256 => bool)) public tokenHasMinted;
     mapping(address => mapping(uint256 => bool)) public tokenHasBeenPaidfor;
-    mapping(uint256 => bool) private tokenIsMinting;
     mapping(uint256 => bool) private tokenIsBurning;
 
 
@@ -102,6 +101,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
 
     //bulk pay an array of tokens in eth. allows other people (ie possibly project owners to pay for their community
     function payForMints(address originContractAddress, uint256[] memory originTokenIds) external payable {
+        require(originTokenIds.length < 10, "not allowed to pay for more than 10 mints at a time");
         uint256 totalPrice = mintPrice*originTokenIds.length;
         require(msg.value >=totalPrice, "you didn't pay enough for all of these mints");
         for (uint i = 0; i < originTokenIds.length; i++) {
@@ -224,8 +224,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         require(originContractAddress != address(this), "cannot mint proof of a proof");
         _tokenIdCounter.increment();
         uint256 tokenId = _tokenIdCounter.current();
-        tokenIsMinting[tokenId] = true;
-        _safeMint(msg.sender, tokenId);
         OwnerInfo storage info =  _owners[tokenId];
         info.owner = msg.sender;
         info.originalContract = originContractAddress;
@@ -234,8 +232,8 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         tokenToToken[originContractAddress][originTokenId] = tokenId;
         tokenHasMinted[originContractAddress][originTokenId] = true;
         tokenHasBeenPaidfor[originContractAddress][originTokenId] = true;
-        tokenIsMinting[tokenId] = false;
         tokenIsBurning[tokenId] = false;
+        _safeMint(msg.sender, tokenId);
         emit Mint(tokenId, msg.sender);
         return tokenId;
     }
@@ -257,8 +255,9 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     //if the owner of the token no longer wants it in their wallet, they can burn it themselves
     function burnSelf(uint256 proofTokenId) external virtual {
         require(msg.sender == ownerOf(proofTokenId), "you don't own the token");
-        _burn(proofTokenId);
+        require(tokenIsBurning[proofTokenId] == true, "you need to call burn function prior to burnSelf");
         tokenIsBurning[proofTokenId] = false;
+        _burn(proofTokenId);
     }
 
     /// --- Disabling Transfer Of Soulbound NFT --- ///
@@ -331,7 +330,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
             emit UpdateUser(tokenId, address(0), 0);
         }
         //transfers only allowed when the token is either minting or burning.  
-        require(tokenIsMinting[tokenId] && from == address(0) || to == address(0) && tokenIsBurning[tokenId], "Not allowed to transfer token"); //only require transfer while burning and minting
+        require(from == address(0) || to == address(0), "Not allowed to transfer token"); //only require transfer while burning and minting
     }
 
     receive() external payable {}
