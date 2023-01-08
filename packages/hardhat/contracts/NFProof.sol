@@ -156,8 +156,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     /// @param expires  UNIX timestamp, The new user could use the NFT before expires
     function setUser(uint256 tokenId, address user, uint64 expires) public override virtual{
         require(_isApprovedOrOwner(msg.sender, tokenId),"ERC721: transfer caller is not owner nor approved");
-        require(userOf(tokenId)==address(0),"User already assigned.");
-        require(isValidOwner(tokenId) == true, "Cannot set user if you do not own the underlying asset");
         require(expires > block.timestamp, "expires should be in future");
         UserInfo storage info =  _users[tokenId];
         info.user = user;
