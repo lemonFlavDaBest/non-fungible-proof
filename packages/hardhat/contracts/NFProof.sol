@@ -78,7 +78,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
 
     constructor() ERC721("NonFungibleProof","NFP"){
         mintPrice = 100000000000000; //.0001 ether
-        initVar=true;
         burnPrice = 1000000000; //.000000001 ether
      }
 
