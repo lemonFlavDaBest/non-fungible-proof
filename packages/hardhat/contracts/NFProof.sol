@@ -62,6 +62,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
+    uint256 public burnPrice;
     uint256 public mintPrice;
     bool private initVar;
     address public burnerAddress;
@@ -80,6 +81,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     constructor() ERC721("NonFungibleProof","NFP"){
         mintPrice = 100000000000000; //.0001 ether
         initVar=true;
+        burnPrice = 1000000000; //.000000001 ether
      }
 
     //this function will run once and only once the contract is deployed, setting the burner address
@@ -237,9 +239,10 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     //this effectively burns the token. it erases all information about the token but does not send it to the burner address
-    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external virtual {
+    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external payable virtual {
         require(_exists(proofTokenId), "this token does not exist or has been burned");
-        require(msg.sender == burnerAddress, "only the burner contract may call this function");
+        require(msg.value>=burnPrice, "you didnt pay enough to the burn troll");
+        require(IERC721(originContractAddress).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
         require(tokenToToken[originContractAddress][originTokenId] == proofTokenId, "these do not represent the same token");
         delete _users[proofTokenId];
         delete _owners[proofTokenId];
