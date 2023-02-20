@@ -171,7 +171,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     /// @notice Get the user address of an NFT
     /// @dev The zero address indicates that there is no user or the user is expired
     /// @param tokenId The NFT to get the user address for
-    /// @return The user address for this NFT
+    /// @return The user address for this NFT       
     function userOf(uint256 tokenId) public view override virtual returns(address){
         if( uint256(_users[tokenId].expires) >=  block.timestamp){
             return _users[tokenId].user; 
