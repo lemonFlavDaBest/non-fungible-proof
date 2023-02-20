@@ -310,9 +310,9 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     /**
     * allow the owner to withdraw the money 
     */
-    function mintWithdraw() external onlyOwner {
-        address owner = msg.sender;
-        (bool succ, )= owner.call{value:address(this).balance}("");
+    function ethWithdraw() external onlyOwner {
+        address contractOwner = msg.sender;
+        (bool succ, )= contractOwner.call{value:address(this).balance}("");
         require(succ, "withdraw failed");
     }
  
