@@ -64,8 +64,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     Counters.Counter private _tokenIdCounter;
     uint256 public burnPrice;
     uint256 public mintPrice;
-    bool private initVar;
-    address public burnerAddress;
 
     event Mint(uint256 tokenId, address minter);
     event Burn(uint256 tokenId);
@@ -83,13 +81,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         initVar=true;
         burnPrice = 1000000000; //.000000001 ether
      }
-
-    //this function will run once and only once the contract is deployed, setting the burner address
-    function init(address newBurnerAddress) public onlyOwner {
-        require(initVar==true, "this has already been run");
-        burnerAddress = newBurnerAddress;
-        initVar = false;
-    }
 
     //this set the mint price in ETH
     function setMintPrice(uint256 newPrice) external onlyOwner {
