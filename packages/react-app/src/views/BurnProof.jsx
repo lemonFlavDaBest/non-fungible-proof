@@ -64,7 +64,7 @@ export default function BurnProof({
     console.log(nftCollection, originalTokenId,proofTokenId, cost)
     setLoadingState(true)
     try {
-    const result = tx(writeContracts.TheBurn.burner(nftCollection, originalTokenId, proofTokenId, {value: cost}), update => {
+    const result = tx(writeContracts.NFProof.burn(nftCollection, originalTokenId, proofTokenId, {value: cost}), update => {
     console.log("📡 Transaction Update:", update);
     if (update && (update.status === "confirmed" || update.status === 1)) {
       console.log(" 🍾 Transaction " + update.hash + " finished!");

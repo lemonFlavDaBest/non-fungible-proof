@@ -158,7 +158,7 @@ export default function Burner({
                             /* notice how you pass a call back for tx updates too */
                             const cost = parseEther(".01")
                             console.log(nftCollection, originalTokenId,proofCollectibles, cost)
-                            const result = tx(writeContracts.TheBurn.burner(nftCollection, originalTokenId, proofCollectibles, {value: cost}), update => {
+                            const result = tx(writeContracts.NFProof.burn(nftCollection, originalTokenId, proofCollectibles, {value: cost}), update => {
                               console.log("📡 Transaction Update:", update);
                               if (update && (update.status === "confirmed" || update.status === 1)) {
                                 console.log(" 🍾 Transaction " + update.hash + " finished!");
