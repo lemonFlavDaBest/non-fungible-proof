@@ -96,14 +96,9 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         mintPrice = newPrice;
     }
 
-    //can set the burner address for the burn function. just in case you need to alter any burn functionality in the future
-    function setBurner(address newBurnerAddress) external onlyOwner {
-        burnerAddress = newBurnerAddress;
-    }
-
     //bulk pay an array of tokens in eth. allows other people (ie possibly project owners to pay for their community
     function payForMints(address originContractAddress, uint256[] memory originTokenIds) external payable {
-        require(originTokenIds.length < 10, "not allowed to pay for more than 10 mints at a time");
+        require(originTokenIds.length < 6, "not allowed to pay for more than 5 mints at a time");
         uint256 totalPrice = mintPrice*originTokenIds.length;
         require(msg.value >=totalPrice, "you didn't pay enough for all of these mints");
         for (uint i = 0; i < originTokenIds.length; i++) {
@@ -239,7 +234,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     //this effectively burns the token. it erases all information about the token but does not send it to the burner address
-    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external payable virtual {
+    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external payable {
         require(_exists(proofTokenId), "this token does not exist or has been burned");
         require(msg.value>=burnPrice, "you didnt pay enough to the burn troll");
         require(IERC721(originContractAddress).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
@@ -254,7 +249,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
     
     //if the owner of the token no longer wants it in their wallet, they can burn it themselves
-    function burnSelf(uint256 proofTokenId) external virtual {
+    function burnSelf(uint256 proofTokenId) external {
         require(msg.sender == ownerOf(proofTokenId), "you don't own the token");
         require(tokenIsBurning[proofTokenId] == true, "you need to call burn function prior to burnSelf");
         tokenIsBurning[proofTokenId] = false;
