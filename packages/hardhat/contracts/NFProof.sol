@@ -229,8 +229,6 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         require(msg.value>=burnPrice, "you didnt pay enough to the burn troll");
         require(IERC721(originContractAddress).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
         require(tokenToToken[originContractAddress][originTokenId] == proofTokenId, "these do not represent the same token");
-        delete _users[proofTokenId];
-        delete _owners[proofTokenId];
         delete tokenToToken[originContractAddress][originTokenId];
         tokenIsBurning[proofTokenId] = true;
         tokenHasMinted[originContractAddress][originTokenId] = false;
@@ -243,6 +241,8 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         require(msg.sender == ownerOf(proofTokenId), "you don't own the token");
         require(tokenIsBurning[proofTokenId] == true, "you need to call burn function prior to burnSelf");
         tokenIsBurning[proofTokenId] = false;
+        delete _users[proofTokenId];
+        delete _owners[proofTokenId];
         _burn(proofTokenId);
     }
 
