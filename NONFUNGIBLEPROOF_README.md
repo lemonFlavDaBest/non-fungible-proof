@@ -5,18 +5,17 @@ The idea of this contract is to Mint an ERC721 token that you can prove ownershi
 
 I'll explain how the contract functions in the next sections.
 
-### Non-Fungible Proof Token
+## Non-Fungible Proof Token
 The goal of Non-Fungible Proof Tokens is to allow owners of NFTs tha ability and confidence to use their NFTs safely without risking their assets. 
 
-##### How does it work?
+#### How does it work?
 It is pretty simple. Let's give a quick example: Say you want to prove ownership for you Azuki, BAYC, Moonbird, etc NFT from your hot wallet. so you go to mint an Non-Fungible Proof Token.
 
 1. you enter the contract address and token id of the NFT you own (e.g Azuki #1);
-2. the contract will verify that you actually own the NFT. then will mint your NFP token. the NFP token will will copy the metadata and image of the original token, so it will be easily recognizeable. 
-3. Set your hot wallet address (and the duration) that you want to use prove ownership over you NFP.
-Finished:
+2. the contract will verify that you actually own the NFT. then will mint your NFP token. the NFP token will will copy the metadata and image of the original token, so it will be easily recognizeable. NFP tokens are soulbound and cannot be transferred, since they are only used to prove ownership. 
+3. Set your hot wallet address (and the duration) that you want to use prove ownership over you NFP. And Finished!
 
-#### How to deal with underlying NFT ownership changes
+### How to deal with underlying NFT ownership changes
 Now because most NFTs are freely tradeable and transferable, an NFP token must deal with ownership of the underlying asset(NFT) changing (either through sale or transfer). Since NFP tokens cannot be transferred (they are soulbound to the minters wallet) In order to deal with this, an NFP token will become invalid (through validity checks) if ownership of the underlying NFT changes. In the contract we have a few functions (validity checks) that test whether an NFP token is still valid. These functions are designed to be easily implemented in projects by developers to suit their specific needs. 
 
 The validity check functions are below:
@@ -28,12 +27,12 @@ function validateOwnerUser(address originContract, uint256 originTokenId) -- thi
 
 function validateVerifyUser(address originContract, uint256 originTokenId, address verifyAddress) -- this function is the same as the function above except that it uses verifyAddress instead of msg.sender. If projects want to implement NFPs into their ecosystem, they might need slightly different functions to meet their use case. 
 
-##### What to do if the owner before you already minted the NFP for your NFT
+### What to do if the owner before you already minted the NFP for your NFT
 Since the NFP will already me marked as invalid, so that token will not be able to get any of the benefits of your asset.
 
 However in order to mint your NFP token, you will need to 'burn' the NFP token of the owner before you. (This is done easily through our UI) The contract will simply check if you are the correct owner of the underlying asset, then 'burn' the NFP token of the old owner. 
 
-This is not a traditional burn (it doesn't send to the zero address), it instead erases all of the NFP token information, only keeping its ID. This effectively burns the token, while preserving some features (that will be illuminated on in the next section) and future use cases.
+This is not a traditional burn (it doesn't send to the zero address), it instead erases all of the NFP token information, only keeping its ID. This effectively burns the token, while preserving some features (that will be illuminated on in the next section) and future use cases. The token will be m
 
 
 ### Use Cases
