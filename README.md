@@ -1,4 +1,7 @@
-# 🏗 Scaffold-ETH
+# INFORMATION
+this is a full stack mono repo built with scaffold-eth. backend is in packages/hardhat and the front end is in packages/react-app. If you are looking for documentation for the solidity contracts please read NONFUNGIBLEPROOF_README.md this will explain how the contract works, how to build on it, etc. 
+
+## 🏗 Scaffold-ETH
 
 > everything you need to build on Ethereum! 🚀
 
