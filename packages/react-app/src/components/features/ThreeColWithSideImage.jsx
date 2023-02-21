@@ -82,9 +82,9 @@ export function ThreeColWithSideImage ({ cards = null, heading = "Amazing Featur
     { imageSrc: CustomizeIconImage, title: "Staking solutions", 
     description: "Use NFPs as a staking solution for your NFTs, keeping them liquid and not risking staked assets"},
     { imageSrc: FastIconImage, title: "Fast",
-    description: "Quick to set up and quick to verify ownership."},
-    { imageSrc: ReliableIconImage, title: "Easy",
-    description: "Mint NFP token and set your hot wallet as Owner. Voila!" }
+    description: "Mint NFP token and set your hot wallet as Owner. Voila!"},
+    { imageSrc: ReliableIconImage, title: "Composability",
+    description: "Projects can implement Non-Fungible Proof tokens into their next event, airdrop, claim, etc. with ease." }
   ];
 
   if (!cards) cards = defaultCards;
