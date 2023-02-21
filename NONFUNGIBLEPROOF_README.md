@@ -41,4 +41,14 @@ This is not a traditional burn (it doesn't send to the zero address), it instead
 
 The issue with this (which was predicted and came to fruition), is that if users lost ownership of their NFT (either through sale or hack), they would also lose access to their locked APE coin and rewards. This could potentially cost users thousands of dollars due to inadequate system design. 
 
-NonFungibleProof tokens would solve these issues. How? Projects could lock the NFPs or use them as the key staking instead of the underlying asset. 
+NonFungibleProof tokens would solve these issues. How? Projects could lock the NFPs or use them as the key staking instead of the underlying asset. If an NFP token is chosen, the staking process is simple: 1) rewards are accrued by valid users of NFP tokens (invalid NFP tokens, where the underlying asset is sold will not get rewards) 2) The user or the owner of the NFP token can withdraw their locked and past rewards with the NFP token even if the underlying asset is sold or transferred (since the nfp is the key and not the nft). 
+
+This allows for the best of both worlds. Rewards are only distributed to valid owners, and users will still have access to their staked money and past as long as they still have access to their NFP token. 
+
+2) Airdrop: Many users store their blue chip NFTs on a cold wallet or separate device to keep them safe. So projects might want to check if their users have a valid hot wallet they can airdrop things to. Our contracts have quick and easy functions that projects and developers can call to make this easy. 
+
+You can either call findUserProofToken(address originContractAddress, uint256 originTokenId) or function findValidUserProofToken(address originContractAddress, uint256 originTokenId) from our contracts. They are very similiar, the only difference is that findUserProofToken will always return the 0 address if there is not a valid NFP token with valid user assigned. 
+
+3) Token Gating (events, webpages, claims etc.): Users of NFTs will not want to carry their cold wallet to events putting themselves and their assets at risks. They also might be weary of connecting their cold wallet to web pages and claims due to the number of high profile hacks. 
+
+Using our NFP tokens and validation functions. Token gating is incredibly simple with just a function call or two with our contracts. Everything is verifies on chain. If you need help, we can help you with your contracts. 
