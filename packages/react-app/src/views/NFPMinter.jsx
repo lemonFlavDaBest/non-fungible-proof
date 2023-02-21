@@ -143,30 +143,6 @@ export default function NFPMinter({
 
   }, [address, tokenToToken]);
 
-  /*async function onMint() {
-     //look how you call setPurpose on your contract: 
-     //notice how you pass a call back for tx updates too 
-            const cost = utils.parseEther(".01");
-              const result = tx(writeContracts.NFProof.safeMint(nftCollection, originalTokenId, {value: cost}), update => {
-                console.log("📡 Transaction Update:", update);
-                if (update && (update.status === "confirmed" || update.status === 1)) {
-                  console.log(" 🍾 Transaction " + update.hash + " finished!");
-                  console.log(
-                    " ⛽️ " +
-                      update.gasUsed +
-                      "/" +
-                      (update.gasLimit || update.gas) +
-                      " @ " +
-                      parseFloat(update.gasPrice) / 1000000000 +
-                      " gwei",
-                  );
-                }
-              });
-              console.log("awaiting metamask/web3 confirm result...", result);
-              console.log(await result);
-          
-  }*/
-
   const handleEthMintClick = async() => {
     
         /* look how you call setPurpose on your contract: */
@@ -236,20 +212,9 @@ export default function NFPMinter({
     return (
         <>
             <Typography.Paragraph style={{color:'#5a13e6'}}>Token Has Been Paid For. Mint for Free!</Typography.Paragraph>
+            <br></br>
             <Button type= "link" style={{backgroundColor: '#805ad5', color:'white'}} onClick = {handleFreeMintClick} loading={mintLoading}>Mint</Button>
         </>
-    )
-  }
-
-
-  const ApproveApe = () => {
-    return (<Button type= "link" style={{backgroundColor: '#805ad5', color:'white'}} onClick = {handleApproveClick} loading={approveLoading}>Approve</Button>)
-  }
-
-  const PayWithApe = () => {
-    
-    return ( 
-            <Button type= "link" style={{backgroundColor: '#805ad5', color:'white'}} onClick={handleApePay} loading={payLoading}>1 $APE</Button>
     )
   }
 
@@ -257,11 +222,7 @@ export default function NFPMinter({
     {
       key: 'tab1',
       tab: 'Mint',
-    },
-    {
-      key: 'tab2',
-      tab: 'w/ $APE',
-    },
+    }
   ];
   const contentList = {
 
@@ -274,85 +235,11 @@ export default function NFPMinter({
           <Button type= "link" style={{backgroundColor: '#805ad5', color:'white'}} onClick = {handleEthMintClick} loading={mintLoading}>Mint</Button>
         }
           </Row>
-    ,
-    tab2: <Row justify='center'>
-            <Typography.Paragraph strong>Minting Costs <Typography.Text style={{color:'#5a13e6'}}>1 $APE</Typography.Text></Typography.Paragraph>
-            <br></br>
-            <Typography.Paragraph>After minting you can set any any of your wallets as the offical owner.</Typography.Paragraph>
-            <br></br>
-            {tokenPaidBool ? <FreeMint />: allowNumber >= 1||allowNum>=1  ? <PayWithApe />:<ApproveApe />  }
-          </Row>,
   };
 
-    const handleApproveClick = async() => {
-        const cost = utils.parseEther("1")
-        setApproveLoading(true)
-        //approve this address for the contract
-        try{
-        const result = tx(writeContracts.ApeSample.approve(nfProofAddress, cost), update => {
-            setApproveLoading(true)
-            console.log("📡 Transaction Update:", update);
-            if (update && (update.status === "confirmed" || update.status === 1)) {
-              console.log(" 🍾 Transaction " + update.hash + " finished!");
-              console.log(
-                " ⛽️ " +
-                  update.gasUsed +
-                  "/" +
-                  (update.gasLimit || update.gas) +
-                  " @ " +
-                  parseFloat(update.gasPrice) / 1000000000 +
-                  " gwei",
-              );
-            }
-          });
-          console.log("awaiting metamask/web3 confirm result...", result);
-          console.log(await result);
-          setAllowNum(1)
-        } catch(e) {
-            console.log(e)
-            setApproveLoading(false)
-        }
-    }
-
-    const handleApePay = async() => {
-        setPayLoading(true)
-        const cost = utils.parseEther("1");
-        try {
-              const result = tx(writeContracts.NFProof.payWithERC(cost, search_contract, [search_token]), update => {
-                
-                console.log("📡 Transaction Update:", update);
-                if (update && (update.status === "confirmed" || update.status === 1)) {
-                  console.log(" 🍾 Transaction " + update.hash + " finished!");
-                  console.log(
-                    " ⛽️ " +
-                      update.gasUsed +
-                      "/" +
-                      (update.gasLimit || update.gas) +
-                      " @ " +
-                      parseFloat(update.gasPrice) / 1000000000 +
-                      " gwei",
-                  );
-                }
-              });
-              console.log("awaiting metamask/web3 confirm result...", result);
-              console.log(await result);
-              
-            } catch(e) {
-              console.log(e)
-              setPayLoading(false)
-            }
-    }
-
-
-  
-
-    
 
   return (
     <Container>
-    
-      
-       
         <Row justify="center">
         <Space direction="vertical">
             <Typography.Title
