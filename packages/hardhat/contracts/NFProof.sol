@@ -49,15 +49,18 @@ error SoulBound();
 /// @custom:experimental This is an experimental contract.
 contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     
+    /// @notice stores the user/assigned owner's information for an NFP token. UserInfo includes an expires varable that 
+    /// determines when that user designation will expire
     struct UserInfo 
     {
         address user;   // address of user role
-        uint64 expires;// unix timestamp, user expires
+        uint64 expires;// unix timestamp, assigned user expires
         uint256 proofTokenId; 
-        address originalContract; //address of contract we shadow
+        address originalContract; //address of contract we shadow(are proving ownership of)
         uint256 originalTokenId; // tokenId that we want to shadow
     }
 
+    /// @notice stores the owner/minter's information for an NFP token
     struct OwnerInfo {
         address owner;
         uint256 proofTokenId;
@@ -68,26 +71,26 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
-    uint256 public burnPrice;
-    uint256 public mintPrice;
+    uint256 public burnPrice; // how much it costs to burn a token
+    uint256 public mintPrice; // how much it costs to mint an NFP. 
 
     event Mint(uint256 tokenId, address minter);
     event Burn(uint256 tokenId);
     
     mapping (uint256  => UserInfo) public _users;
     mapping (uint256  => OwnerInfo) public _owners;
-    mapping(address => mapping(uint256 => uint256)) public tokenToToken;
-    mapping(address => mapping(uint256 => bool)) public tokenHasMinted;
-    mapping(address => mapping(uint256 => bool)) public tokenHasBeenPaidfor;
+    mapping(address => mapping(uint256 => uint256)) public tokenToToken; //maps a nft to its corresponding NFP token
+    mapping(address => mapping(uint256 => bool)) public tokenHasMinted; //checks whether an nft's corresponding NFP has minted
+    mapping(address => mapping(uint256 => bool)) public tokenHasBeenPaidfor; //tracks whether a token has been paid for
     mapping(uint256 => bool) private tokenIsBurning;
 
 
     constructor() ERC721("NonFungibleProof","NFP"){
-        mintPrice = 100000000000000; //.0001 ether
+        mintPrice = 1000000000000; //.000001 ether
         burnPrice = 1000000000; //.000000001 ether
      }
 
-    //this set the mint price in ETH
+    
     function setMintPrice(uint256 newPrice) external onlyOwner {
         mintPrice = newPrice;
     }
