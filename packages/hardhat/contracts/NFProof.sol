@@ -90,12 +90,15 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         burnPrice = 1000000000; //.000000001 ether
      }
 
-    
+    /// @notice can set the mint price of an NFP if we want to change post-deployment 
     function setMintPrice(uint256 newPrice) external onlyOwner {
         mintPrice = newPrice;
     }
 
-    //bulk pay an array of tokens in eth. allows other people (ie possibly project owners to pay for their community
+    //// @notice projects and people can use this to pay for multiple nps at the same time
+    /// @dev projects or users might want to pay for their users NFPs as a reward, prize, etc. 
+    /// @param originContractAddress The address of the nft collection
+    /// @param originTokenIds an array of token ids that you want to pay for in bul
     function payForMints(address originContractAddress, uint256[] memory originTokenIds) external payable {
         require(originTokenIds.length < 6, "not allowed to pay for more than 5 mints at a time");
         uint256 totalPrice = mintPrice*originTokenIds.length;
@@ -103,7 +106,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         for (uint i = 0; i < originTokenIds.length; i++) {
             require(!tokenHasMinted[originContractAddress][originTokenIds[i]], "token already minted");
             require(!tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]], "token already paid for");
-            require(IERC721(originContractAddress).ownerOf(originTokenIds[i]) != address(0), "This token doesn't exist");
+            require(IERC721(originContractAddress).ownerOf(originTokenIds[i]) != address(0), "token doesn't exist");
             tokenHasBeenPaidfor[originContractAddress][originTokenIds[i]] = true;
         }
     }
