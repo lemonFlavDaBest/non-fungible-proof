@@ -40,7 +40,13 @@ interface IERC4907 {
 
 error SoulBound();
 
-
+/// @title Non-Fungible Proof
+/// @author ruk.eth
+/// @notice This purpose of this contract is to show Proof of Ownership over NFTs. You can mint soulbound NFTs that represent
+/// ownership over an nft. You can assign a 'user' to this NFT to prove ownership from a separate wallet
+/// @dev This is designed to be used by projects as they see fit. please contact us if you are looking to implement
+/// this with your project.
+/// @custom:experimental This is an experimental contract.
 contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     
     struct UserInfo 
