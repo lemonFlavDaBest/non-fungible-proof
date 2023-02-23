@@ -44,6 +44,8 @@ error SoulBound();
 /// @author ruk.eth
 /// @notice This purpose of this contract is to show Proof of Ownership over NFTs. You can mint soulbound NFTs that represent
 /// ownership over an nft. You can assign a 'user' to this NFT to prove ownership from a separate wallet
+/// @notice when we refer to a 'valid NFP token'; we are saying that 1) valid user is assigned -- an non-zero address that hasn't expired.
+/// and 2) there is still valid owner -- the owner/minter of the NFP token still owns the underlying NFT they are proving ownership over
 /// @dev This is designed to be used by projects as they see fit. please contact us if you are looking to implement
 /// this with your project.
 /// @custom:experimental This is an experimental contract.
@@ -137,7 +139,12 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         return true;
     }
 
-    //validates a wallet as the owner of a specific token from an nft collection
+    /// @notice this function takes an nft contract address and token as input. it returns true if the sender is the user assigned to
+    /// the nfp and the nfp owner/minter is still the valid owner of the underlying nft.
+    /// @dev call this to find if there is a valid nfp with a valid user for an nft 
+    /// @param originContract The contract address of the nft you want to check
+    /// @param originTokenId The tokenId of the nft you want to check for
+    /// @return returns true if the owner is valid and the user is the msg.sender
     function validateOwnerUser(address originContract, uint256 originTokenId) external view returns (bool){
         uint256 proofToken = tokenToToken[originContract][originTokenId];
         require(_exists(proofToken), "this token does not exist or has been burned");
@@ -146,8 +153,14 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         return true;
     }
 
-    //works similar to above function, accept that it is attempting to verify a specific address. other contracts could utilize this
-    //to verify their users wallet
+    /// @notice Works similar to the above function. except instead of checking for msg.sender it checks for verifyAddress
+    /// (an address you will input into the function)
+    /// @dev call this to find you want to verify if an address is the valid user assigned to a valid NFP (the owner/minter of the NFP
+    ///  is still the valid owner of the udnerlying asset)
+    /// @param originContract The contract address of the nft you want to check
+    /// @param originTokenId The tokenId of the nft you want to check for
+    /// @param verifyAddress the address you want to check to see if it is the user assigned assigned to the corresponding NFP
+    /// @return returns true if the owner is valid and the user is the msg.sender
     function validateVerifyUser(address originContract, uint256 originTokenId, address verifyAddress) external view returns (bool){
         uint256 proofToken = tokenToToken[originContract][originTokenId];
         require(_exists(proofToken), "this token does not exist or has been burned");
@@ -159,6 +172,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     /// @notice set the user and expires of a NFT
     /// @dev The zero address indicates there is no user 
     /// Throws if `tokenId` is not valid NFT
+    /// @param tokenId The NFP token to get the user address for
     /// @param user  The new user of the NFT
     /// @param expires  UNIX timestamp, The new user could use the NFT before expires
     function setUser(uint256 tokenId, address user, uint64 expires) public override virtual{
@@ -175,7 +189,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
 
     /// @notice Get the user address of an NFT
     /// @dev The zero address indicates that there is no user or the user is expired
-    /// @param tokenId The NFT to get the user address for
+    /// @param tokenId The NFP token to get the user address for
     /// @return The user address for this NFT       
     function userOf(uint256 tokenId) public view override virtual returns(address){
         if( uint256(_users[tokenId].expires) >=  block.timestamp){
