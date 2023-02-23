@@ -37,15 +37,15 @@ interface IERC4907 {
     
 }
 
-
+/// @notice this is our custom error to prevent token transfers. 
 error SoulBound();
 
 /// @title Non-Fungible Proof
 /// @author ruk.eth
 /// @notice This purpose of this contract is to show Proof of Ownership over NFTs. You can mint soulbound NFTs that represent
 /// ownership over an nft. You can assign a 'user' to this NFT to prove ownership from a separate wallet
-/// @notice when we refer to a 'valid NFP token'; we are saying that 1) valid user is assigned -- an non-zero address that hasn't expired.
-/// and 2) there is still valid owner -- the owner/minter of the NFP token still owns the underlying NFT they are proving ownership over
+/// @notice when we refer to a 'valid NFP token'; we mean 1) valid user is assigned -- an non-zero address that hasn't expired.
+/// and 2) there is a valid owner -- the owner/minter of the NFP token still owns the underlying NFT they are proving ownership over
 /// @dev This is designed to be used by projects as they see fit. please contact us if you are looking to implement
 /// this with your project.
 /// @custom:experimental This is an experimental contract.
@@ -208,24 +208,27 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     /// @dev See {IERC165-supportsInterface}.
-    //Erc721
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Enumerable, IERC165) returns (bool) {
         return interfaceId == type(IERC4907).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    //will find the wallet address that is set as owner given a contract address and tokenId
-    //if no valid user is set as owner will return nothing
-    function findValidUserProofToken(address originContractAddress, uint256 originTokenId) external view returns (address){
-        uint256 proofToken = tokenToToken[originContractAddress][originTokenId];
+    /// @notice input an underlying nft contract and tokenId and this function returns to the user assigned to 
+    /// its NFP token, if it exists. 
+    /// @dev will return user assigned to the NFP token of an underlying asset. 
+    /// @param originContract The contract address of the nft you want to check
+    /// @param originTokenId The tokenId of the nft you want to check for
+    /// @return address of the user assigned to that token
+    function findValidUserProofToken(address originContract, uint256 originTokenId) external view returns (address){
+        uint256 proofToken = tokenToToken[originContract][originTokenId];
         require(userOf(proofToken) != address(0), "No valid user assigned");
         require(isValidOwner(proofToken) == true, "This proof token does not have a valid owner");
         return userOf(proofToken);
     }
 
-    //similar to the above function but always returns an address. it will either return the correct 
-    //addres  or it will return  address(0) if there is not a valid proof token with valid user assigned
-    function findUserProofToken(address originContractAddress, uint256 originTokenId) external view returns (address){
-        uint256 proofToken = tokenToToken[originContractAddress][originTokenId];
+    /// @notice works exactly the same as the above function but returns a zero address if there is not a valid owner and 
+    /// user assigned.
+    function findUserProofToken(address originContract, uint256 originTokenId) external view returns (address){
+        uint256 proofToken = tokenToToken[originContract][originTokenId];
         if(isValidOwner(proofToken) == true) {
         return userOf(proofToken);
         } else {
