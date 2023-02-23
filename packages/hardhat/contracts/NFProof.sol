@@ -237,7 +237,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     
-    /// @notice checks to ensure you own the underlying NFT then mints and NFP for you
+    /// @notice the minting function. checks to ensure you own the underlying NFT then mints an NFP token for you
     /// @dev does checks, stores information about the NFP token, then mints a token.
     /// @param originContract The contract address of the nft you want to mint an NFP token for
     /// @param originTokenId The tokenId of the nft you want to mint an NFP token for
@@ -263,20 +263,24 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         return tokenId;
     }
 
-    //this effectively burns the token. it erases all information about the token but does not send it to the burner address
-    function burn(address originContractAddress, uint256 originTokenId, uint256 proofTokenId) external payable {
+    /// @notice Our burn functions but it doesn't actually burn the token in the traditional sense. just invalidates the token 
+    /// and removes some of the properties. this can only be called by the owner of the undlerying NFT
+    /// @dev this will remove properties of the token without destroying the token. so if user still needs the token to withdrawal
+    /// or other emergency actions like that, they will be able to. but they will not gain any benefits of a valid NFP token
+    function burn(address originContract, uint256 originTokenId, uint256 proofTokenId) external payable {
         require(_exists(proofTokenId), "this token does not exist or has been burned");
         require(msg.value>=burnPrice, "you didnt pay enough to the burn troll");
-        require(IERC721(originContractAddress).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
-        require(tokenToToken[originContractAddress][originTokenId] == proofTokenId, "these do not represent the same token");
-        delete tokenToToken[originContractAddress][originTokenId];
+        require(IERC721(originContract).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
+        require(tokenToToken[originContract][originTokenId] == proofTokenId, "these do not represent the same token");
+        delete tokenToToken[originContract][originTokenId];
         tokenIsBurning[proofTokenId] = true;
-        tokenHasMinted[originContractAddress][originTokenId] = false;
-        tokenHasBeenPaidfor[originContractAddress][originTokenId] = false;
+        tokenHasMinted[originContract][originTokenId] = false;
+        tokenHasBeenPaidfor[originContract][originTokenId] = false;
         emit Burn(proofTokenId);
     }
     
-    //if the owner of the token no longer wants it in their wallet, they can burn it themselves
+    /// @notice since the burn function only removes properties and not the actual token. this will allow the owner of the
+    /// nfp to actually burn the token. 
     function burnSelf(uint256 proofTokenId) external {
         require(msg.sender == ownerOf(proofTokenId), "you don't own the token");
         require(tokenIsBurning[proofTokenId] == true, "you need to call burn function prior to burnSelf");
@@ -287,7 +291,8 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     /// --- Disabling Transfer Of Soulbound NFT --- ///
-    // this code is from @author 0xMouseLess
+    /// Code provides additional assurance that NFP tokens are soulbound and cannot be transferred. 
+    ///this code is from @author 0xMouseLess
 
     /// @notice Function disabled as cannot transfer a soulbound nft
     function safeTransferFrom(address, address, uint256,bytes memory) public pure override (ERC721, IERC721) {
@@ -324,17 +329,13 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         revert SoulBound();
     }
 
-    /**
-    * This token copies metadata from the original token. 
-     */
-
+    ///This token copies metadata from the original token so that it is recognizeable and a match.. 
     function tokenURI(uint256 tokenId) public view virtual override(ERC721, IERC721Metadata) returns (string memory) {
         return IERC721Metadata(_owners[tokenId].originalContract).tokenURI(_owners[tokenId].originalTokenId);
     }
 
-    /**
-    * allow the owner to withdraw the money 
-    */
+    ///allows the owner of the contract to withdraw money 
+    
     function ethWithdraw() external onlyOwner {
         address contractOwner = msg.sender;
         (bool succ, )= contractOwner.call{value:address(this).balance}("");
@@ -355,7 +356,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
             delete _users[tokenId];
             emit UpdateUser(tokenId, address(0), 0);
         }
-        //transfers only allowed when the token is either minting or burning.  
+        //an additional check: transfers only allowed when the token is either minting or burning.  
         require(from == address(0) || to == address(0), "Not allowed to transfer token"); //only require transfer while burning and minting
     }
 
