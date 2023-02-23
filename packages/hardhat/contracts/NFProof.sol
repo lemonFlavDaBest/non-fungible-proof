@@ -237,23 +237,26 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     
-    //this willl mint one nft. checks in order 1) if you paid enough for mint 2) if you are the owner of the nft
-    //3) check to see if that token has already been minted. 4) make sure your not minting proof of itself. 5. update the owner info in storage.
-    function safeMint(address originContractAddress, uint256 originTokenId) public payable returns (uint256){
-        require(msg.value>=mintPrice || tokenHasBeenPaidfor[originContractAddress][originTokenId] == true, "you didnt pay enough to the mint troll");
-        require(IERC721(originContractAddress).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
-        require(!tokenHasMinted[originContractAddress][originTokenId], "token already minted");
-        require(originContractAddress != address(this), "cannot mint proof of a proof");
+    /// @notice checks to ensure you own the underlying NFT then mints and NFP for you
+    /// @dev does checks, stores information about the NFP token, then mints a token.
+    /// @param originContract The contract address of the nft you want to mint an NFP token for
+    /// @param originTokenId The tokenId of the nft you want to mint an NFP token for
+    /// @return the tokenId that you minted
+    function safeMint(address originContract, uint256 originTokenId) public payable returns (uint256){
+        require(msg.value>=mintPrice || tokenHasBeenPaidfor[originContract][originTokenId] == true, "you didnt pay enough to the mint troll");
+        require(IERC721(originContract).ownerOf(originTokenId) == msg.sender, "You do not own this NFT");
+        require(!tokenHasMinted[originContract][originTokenId], "token already minted");
+        require(originContract != address(this), "cannot mint proof of a proof");
         _tokenIdCounter.increment();
         uint256 tokenId = _tokenIdCounter.current();
         OwnerInfo storage info =  _owners[tokenId];
         info.owner = msg.sender;
-        info.originalContract = originContractAddress;
+        info.originalContract = originContract;
         info.originalTokenId = originTokenId;
         info.proofTokenId = tokenId;
-        tokenToToken[originContractAddress][originTokenId] = tokenId;
-        tokenHasMinted[originContractAddress][originTokenId] = true;
-        tokenHasBeenPaidfor[originContractAddress][originTokenId] = true;
+        tokenToToken[originContract][originTokenId] = tokenId;
+        tokenHasMinted[originContract][originTokenId] = true;
+        tokenHasBeenPaidfor[originContract][originTokenId] = true;
         tokenIsBurning[tokenId] = false;
         _safeMint(msg.sender, tokenId);
         emit Mint(tokenId, msg.sender);
