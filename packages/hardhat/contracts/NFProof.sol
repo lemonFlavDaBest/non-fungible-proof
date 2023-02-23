@@ -111,7 +111,10 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         }
     }
 
-    //takes in a token Id and will return true if there is a valid owner and user assigned
+    /// @notice checks to see if a nfp token has a valid owner and user
+    /// @dev call this function with nfp tkenId to see if this token has a valid owner and user assigned
+    /// @param tokenId the id of the nfp token
+    /// @return bool true if token has valid owner and user
     function isValidUserToken(uint256 tokenId) external view returns (bool) {
         if(uint256(_users[tokenId].expires) >=  block.timestamp){
             require(isValidOwner(tokenId) == true, "This item has been sold and transferred");
