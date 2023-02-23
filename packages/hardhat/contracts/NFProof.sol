@@ -124,7 +124,12 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         }
     }
 
-    //checks to see if the current owner of the proof token is the owner of the actual NFT
+    /// @notice checks to see if an NFP token's underlying asset is still the valid owner. ie the underlying asset has 
+    /// not been sold or transferred. 
+    /// @dev is called internally and can be called externally. checks to see if an NFP token id has a valid owner/ if the nfp is 
+    /// still valid
+    /// @param tokenId the tokenId of the nfp
+    /// @return will return true if the owner of the NFP is still the owner of the original contract/token
     function isValidOwner(uint256 tokenId) public view returns(bool) {
         OwnerInfo memory verifyOwner = _owners[tokenId];
         require(_exists(tokenId), "this token doesn't exist");
