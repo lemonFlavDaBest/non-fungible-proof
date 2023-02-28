@@ -1,125 +1,53 @@
-# INFORMATION
-this is a full stack mono repo built with scaffold-eth. backend is in packages/hardhat and the front end is in packages/react-app. If you are looking for documentation for the solidity contracts please read NONFUNGIBLEPROOF_README.md this will explain how the contract works, how to build on it, etc. 
+# NONFUNGIBLE PROOF INFORMATION
+## Contracts 
+The entirety of the contracts is in packages/hardhat/contracts/NFProof.sol . The other contracts in 
+The idea of this contract is to Mint an ERC721 token that you can prove ownership from another address (ie COLD WALLET --> HOT WALLET). The NonFungibleProof Token can do this by leveraging IERC4907. This allows the ERC721 token to set a user(another hot wallet address in our case) for the token. For the purpose of our contract, setting the user of a token is granting that wallet Proof of Ownership. 
 
-## 🏗 Scaffold-ETH
+I'll explain how the contract functions in the next sections.
 
-> everything you need to build on Ethereum! 🚀
+## Non-Fungible Proof Token
+The goal of Non-Fungible Proof Tokens is to allow owners of NFTs tha ability and confidence to use their NFTs safely without risking their assets. 
 
-🧪 Quickly experiment with Solidity using a frontend that adapts to your smart contract:
+#### How does it work?
+It is pretty simple. Let's give a quick example: Say you want to prove ownership for you Azuki, BAYC, Moonbird, etc NFT from your hot wallet. so you go to mint an Non-Fungible Proof Token.
 
-![image](https://user-images.githubusercontent.com/2653167/124158108-c14ca380-da56-11eb-967e-69cde37ca8eb.png)
+1. you enter the contract address and token id of the NFT you own (e.g Azuki #1);
+2. the contract will verify that you actually own the NFT. then will mint your NFP token. the NFP token will will copy the metadata and image of the original token, so it will be easily recognizeable. NFP tokens are soulbound and cannot be transferred, since they are only used to prove ownership. 
+3. Set your hot wallet address (and the duration) that you want to use prove ownership over you NFP. And Finished!
 
+### How to deal with underlying NFT ownership changes
+Now because most NFTs are freely tradeable and transferable, an NFP token must deal with ownership of the underlying asset(NFT) changing (either through sale or transfer). Since NFP tokens cannot be transferred (they are soulbound to the minters wallet) In order to deal with this, an NFP token will become invalid (through validity checks) if ownership of the underlying NFT changes. In the contract we have a few functions (validity checks) that test whether an NFP token is still valid. These functions are designed to be easily implemented in projects by developers to suit their specific needs. 
 
-# 🏄‍♂️ Quick Start
+The validity check functions are below:
+function isValidUserToken(uint256 tokenId) -- the function will take the NFP tokenId and return true if there is 1) a user assigned and 2) the owner(minter) of the NFP is still the valid owner of the underlying NFT
 
-Prerequisites: [Node (v16 LTS)](https://nodejs.org/en/download/) plus [Yarn](https://classic.yarnpkg.com/en/docs/install/) and [Git](https://git-scm.com/downloads)
+function isValidOwner(uint256 tokenId) -- this function will take the NFP tokenID and return true if the owner is still the valid owner of their underlying asset. This function can be called externally and it is also called internally by other contract functions. 
 
-> clone/fork 🏗 scaffold-eth:
+function validateOwnerUser(address originContract, uint256 originTokenId) -- this function is used to check if the msg.sender is the valid assigned user for the underlying nft(contract + token). the function will take the the underlying asset (nft contract & tokenId), find the corresponding NFP tokenId and check its ownership validity, and then check if the msg.sender is the user wallet assigned to this token. Returns true if everything checks out. This function could be used for tokengating events, website pages, etc. 
 
-```bash
-git clone https://github.com/scaffold-eth/scaffold-eth.git
-```
+function validateVerifyUser(address originContract, uint256 originTokenId, address verifyAddress) -- this function is the same as the function above except that it uses verifyAddress instead of msg.sender. If projects want to implement NFPs into their ecosystem, they might need slightly different functions to meet their use case. 
 
-> install and start your 👷‍ Hardhat chain:
+### What to do if the owner before you already minted the NFP for your NFT
+Since the NFP will already me marked as invalid, so that token will not be able to get any of the benefits of your asset.
 
-```bash
-cd scaffold-eth
-yarn install
-yarn chain
-```
+However in order to mint your NFP token, you will need to 'burn' the NFP token of the owner before you. (This is done easily through our UI) The contract will simply check if you are the correct owner of the underlying asset, then 'burn' the NFP token of the old owner. 
 
-> in a second terminal window, start your 📱 frontend:
-
-```bash
-cd scaffold-eth
-yarn start
-```
-
-> in a third terminal window, 🛰 deploy your contract:
-
-```bash
-cd scaffold-eth
-yarn deploy
-```
-
-🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
-
-📝 Edit your frontend `App.jsx` in `packages/react-app/src`
-
-💼 Edit your deployment scripts in `packages/hardhat/deploy`
-
-📱 Open http://localhost:3000 to see the app
-
-# 📚 Documentation
-
-Documentation, tutorials, challenges, and many more resources, visit: [docs.scaffoldeth.io](https://docs.scaffoldeth.io)
+This is not a traditional burn (it doesn't send to the zero address), it instead erases all of the NFP token information, only keeping its ID. This effectively burns the token, while preserving some features (that will be illuminated on in the next section) and future use cases. The token will be m
 
 
-# 🍦 Other Flavors
-- [scaffold-eth-typescript](https://github.com/scaffold-eth/scaffold-eth-typescript)
-- [scaffold-eth-tailwind](https://github.com/stevenpslade/scaffold-eth-tailwind)
-- [scaffold-nextjs](https://github.com/scaffold-eth/scaffold-eth/tree/scaffold-nextjs)
-- [scaffold-chakra](https://github.com/scaffold-eth/scaffold-eth/tree/chakra-ui)
-- [eth-hooks](https://github.com/scaffold-eth/eth-hooks)
-- [eth-components](https://github.com/scaffold-eth/eth-components)
-- [scaffold-eth-expo](https://github.com/scaffold-eth/scaffold-eth-expo)
-- [scaffold-eth-truffle](https://github.com/trufflesuite/scaffold-eth)
+### Use Cases
+1) Staking Solutions: A big influence to the creation of this protocol had to do with the APE coin + NFT staking fiasco. BAYC wanted to keep the NFTs freely tradeable (not locked), while still being able to stake APE coin. Their solution to this problem was that instead of locking the NFT + APE coin to accrue rewards, the NFT acted as a key that would unlock rewards and the staked ape coin. 
 
+The issue with this (which was predicted and came to fruition), is that if users lost ownership of their NFT (either through sale or hack), they would also lose access to their locked APE coin and rewards. This could potentially cost users thousands of dollars due to inadequate system design. 
 
+NonFungibleProof tokens would solve these issues. How? Projects could lock the NFPs or use them as the key staking instead of the underlying asset. If an NFP token is chosen, the staking process is simple: 1) rewards are accrued by valid users of NFP tokens (invalid NFP tokens, where the underlying asset is sold will not get rewards) 2) The user or the owner of the NFP token can withdraw their locked and past rewards with the NFP token even if the underlying asset is sold or transferred (since the nfp is the key and not the nft). 
 
-# 🔭 Learning Solidity
+This allows for the best of both worlds. Rewards are only distributed to valid owners, and users will still have access to their staked money and past as long as they still have access to their NFP token. 
 
-📕 Read the docs: https://docs.soliditylang.org
+2) Airdrop: Many users store their blue chip NFTs on a cold wallet or separate device to keep them safe. So projects might want to check if their users have a valid hot wallet they can airdrop things to. Our contracts have quick and easy functions that projects and developers can call to make this easy. 
 
-📚 Go through each topic from [solidity by example](https://solidity-by-example.org) editing `YourContract.sol` in **🏗 scaffold-eth**
+You can either call findUserProofToken(address originContractAddress, uint256 originTokenId) or function findValidUserProofToken(address originContractAddress, uint256 originTokenId) from our contracts. They are very similiar, the only difference is that findUserProofToken will always return the 0 address if there is not a valid NFP token with valid user assigned. 
 
-- [Primitive Data Types](https://solidity-by-example.org/primitives/)
-- [Mappings](https://solidity-by-example.org/mapping/)
-- [Structs](https://solidity-by-example.org/structs/)
-- [Modifiers](https://solidity-by-example.org/function-modifier/)
-- [Events](https://solidity-by-example.org/events/)
-- [Inheritance](https://solidity-by-example.org/inheritance/)
-- [Payable](https://solidity-by-example.org/payable/)
-- [Fallback](https://solidity-by-example.org/fallback/)
+3) Token Gating (events, webpages, claims etc.): Users of NFTs will not want to carry their cold wallet to events putting themselves and their assets at risks. They also might be weary of connecting their cold wallet to web pages and claims due to the number of high profile hacks. 
 
-📧 Learn the [Solidity globals and units](https://docs.soliditylang.org/en/latest/units-and-global-variables.html)
-
-# 🛠 Buidl
-
-Check out all the [active branches](https://github.com/scaffold-eth/scaffold-eth/branches/active), [open issues](https://github.com/scaffold-eth/scaffold-eth/issues), and join/fund the 🏰 [BuidlGuidl](https://BuidlGuidl.com)!
-
-  
- - 🚤  [Follow the full Ethereum Speed Run](https://medium.com/@austin_48503/%EF%B8%8Fethereum-dev-speed-run-bd72bcba6a4c)
-
-
- - 🎟  [Create your first NFT](https://github.com/scaffold-eth/scaffold-eth/tree/simple-nft-example)
- - 🥩  [Build a staking smart contract](https://github.com/scaffold-eth/scaffold-eth/tree/challenge-1-decentralized-staking)
- - 🏵  [Deploy a token and vendor](https://github.com/scaffold-eth/scaffold-eth/tree/challenge-2-token-vendor)
- - 🎫  [Extend the NFT example to make a "buyer mints" marketplace](https://github.com/scaffold-eth/scaffold-eth/tree/buyer-mints-nft)
- - 🎲  [Learn about commit/reveal](https://github.com/scaffold-eth/scaffold-eth-examples/tree/commit-reveal-with-frontend)
- - ✍️  [Learn how ecrecover works](https://github.com/scaffold-eth/scaffold-eth-examples/tree/signature-recover)
- - 👩‍👩‍👧‍👧  [Build a multi-sig that uses off-chain signatures](https://github.com/scaffold-eth/scaffold-eth/tree/meta-multi-sig)
- - ⏳  [Extend the multi-sig to stream ETH](https://github.com/scaffold-eth/scaffold-eth/tree/streaming-meta-multi-sig)
- - ⚖️  [Learn how a simple DEX works](https://medium.com/@austin_48503/%EF%B8%8F-minimum-viable-exchange-d84f30bd0c90)
- - 🦍  [Ape into learning!](https://github.com/scaffold-eth/scaffold-eth/tree/aave-ape)
-
-# 💌 P.S.
-
-🌍 You need an RPC key for testnets and production deployments, create an [Alchemy](https://www.alchemy.com/) account and replace the value of `ALCHEMY_KEY = xxx` in `packages/react-app/src/constants.js` with your new key.
-
-📣 Make sure you update the `InfuraID` before you go to production. Huge thanks to [Infura](https://infura.io/) for our special account that fields 7m req/day!
-
-# 🏃💨 Speedrun Ethereum
-Register as a builder [here](https://speedrunethereum.com) and start on some of the challenges and build a portfolio.
-
-# 💬 Support Chat
-
-Join the telegram [support chat 💬](https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA) to ask questions and find others building with 🏗 scaffold-eth!
-
----
-
-🙏 Please check out our [Gitcoin grant](https://gitcoin.co/grants/2851/scaffold-eth) too!
-
-### Automated with Gitpod
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#github.com/scaffold-eth/scaffold-eth)
+Using our NFP tokens and validation functions. Token gating is incredibly simple with just a function call or two with our contracts. Everything is verifies on chain. If you need help, we can help you with your contracts. 
