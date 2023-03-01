@@ -154,7 +154,8 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
     }
 
     /// @notice Works similar to the above function. except instead of checking for msg.sender it checks for verifyAddress
-    /// (an address you will input into the function)
+    /// (an address you will input into the function). you supply an NFT token and user address -- it will return true 
+    /// that supplied user address is the user assigned to that NFT tokens corresponding NFP token. 
     /// @dev call this to find you want to verify if an address is the valid user assigned to a valid NFP (the owner/minter of the NFP
     ///  is still the valid owner of the udnerlying asset)
     /// @param originContract The contract address of the nft you want to check
