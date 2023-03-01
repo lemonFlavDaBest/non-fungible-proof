@@ -170,8 +170,10 @@ export default function SearchNFT({
             <Typography.Title
                             level={2} style ={{color: '#460fb3'}}
                         >NFP Token Minter</Typography.Title>
-            <Typography.Text type="secondary" style ={{alignSelf:'center'}}
+            <Typography.Text type="secondary"
                         >This token represents Proof of Ownership for the NFT.</Typography.Text>
+            <Typography.Text type="secondary" 
+                        >Search for an NFT to view or mint the corresponding NFP token.</Typography.Text>
         </Space>  
         </Row>
         <br></br>
