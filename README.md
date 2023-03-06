@@ -51,3 +51,13 @@ You can either call findUserProofToken(address originContractAddress, uint256 or
 3) Token Gating (events, webpages, claims etc.): Users of NFTs will not want to carry their cold wallet to events putting themselves and their assets at risks. They also might be weary of connecting their cold wallet to web pages and claims due to the number of high profile hacks. 
 
 Using our NFP tokens and validation functions. Token gating is incredibly simple with just a function call or two with our contracts. Everything is verifies on chain. If you need help, we can help you with your contracts. 
+
+## Get Started
+### Step 1
+Search for an NFT you own through the main page. See if it has been minted
+
+### Step 2
+Mint the NFP token for the NFT you own and want to prove ownership over
+
+### Step 3
+View the NFP token and set another wallet you control as owner of the NFP token. 
