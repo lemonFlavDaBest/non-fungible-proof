@@ -24,7 +24,7 @@ export default function Header({ link, title, subTitle, ...props }) {
 }
 
 Header.defaultProps = {
-  link: "https://github.com/austintgriffith/scaffold-eth",
+  link: "",
   title: "🔑 Non-Fungible Proof",
   subTitle: "Proof of Ownership for your NFTs",
 };
