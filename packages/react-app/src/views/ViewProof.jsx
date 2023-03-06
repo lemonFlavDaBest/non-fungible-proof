@@ -59,11 +59,13 @@ export default function ViewProof({
   const ownerObject = useContractReader(readContracts, "NFProof", "_owners", [proof_id]);
   const userOfProof = useContractReader(readContracts, "NFProof", "userOf", [proof_id]);
   const validateOwner = useContractReader(readContracts, "NFProof", "isValidOwner", [proof_id]);
+  
   console.log("validateOwner", validateOwner)
   const validateUser = useContractReader(readContracts, "NFProof", "isValidUserToken", [proof_id]);
   const ownerAddress = ownerObject && ownerObject.proofTokenId.toNumber && ownerObject.owner;
   const ownerOGContract = ownerObject && ownerObject.proofTokenId.toNumber && ownerObject.originalContract;
   const ownerOGToken = ownerObject && ownerObject.proofTokenId.toNumber && ownerObject.originalTokenId;
+  const tokenToToken = useContractReader(readContracts, "NFProof", 'tokenToToken', [ownerOGContract, ownerOGToken]);
   console.log("ownerOGContract:", ownerOGContract)
   
   //const [proofTokenId, setProofTokenId] = useState();
@@ -193,15 +195,15 @@ export default function ViewProof({
         </Col>
         <Col span = {10}>
             
-              {ownerAddress && validateOwner ? <Result
+              {ownerAddress && tokenToToken > 0 && validateOwner ? <Result
                         icon={<CheckCircleTwoTone twoToneColor="#4BB543"/>}
                         title={<Typography.Text strong>Confirmed Owner</Typography.Text>}
                       /> : <Result
-                      title="Ownership Lost"
+                      title="Valid Ownership Lost"
                       icon={<CloseCircleTwoTone twoToneColor="#B90E0A"/>}
                     />}
               
-              {ownerAddress && validateOwner && validateUser ? <Result
+              {ownerAddress && tokenToToken > 0 && validateOwner && validateUser ? <Result
                         icon={<CheckCircleTwoTone twoToneColor="#4BB543" />}
                       title={<Typography.Text strong>Valid Owner Wallet</Typography.Text>}
                       /> : <Result
