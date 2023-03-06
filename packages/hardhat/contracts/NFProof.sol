@@ -97,7 +97,7 @@ contract NFProof is IERC4907, IERC721Metadata, ERC721Enumerable, Ownable {
         mintPrice = newPrice;
     }
 
-    //// @notice projects and people can use this to pay for multiple nps at the same time
+    //// @notice projects and users can use this to pay for multiple nps at the same time
     /// @dev projects or users might want to pay for their users NFPs as a reward, prize, etc. 
     /// @param originContractAddress The address of the nft collection
     /// @param originTokenIds an array of token ids that you want to pay for in bul
