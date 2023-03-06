@@ -61,7 +61,7 @@ const { ethers } = require("ethers");
 
 /// 📡 What chain are your contracts deployed to?
 
-const initialNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, goerli, rinkeby, xdai, mainnet)
+const initialNetwork = NETWORKS.goerli; // <------- select your target frontend network (localhost, goerli, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
@@ -308,7 +308,7 @@ function App(props) {
           <Link to="/">Home</Link>
         </Menu.Item>
         <Menu.Item key="/searchnft">
-          <Link to="/searchnft">Search for NFP Tokens</Link>
+          <Link to="/searchnft">Search for NFP</Link>
         </Menu.Item>
         <Menu.Item key="/mynfps">
           <Link to="/mynfps">View My NFP Tokens</Link>
@@ -344,17 +344,6 @@ function App(props) {
             chainId={selectedChainId}
           />
           <Contract
-            name="TheBurn"
-            price={price}
-            signer={userSigner}
-            mainnetProvider={mainnetProvider}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-            chainId={selectedChainId}
-          />
-          <Contract
             name="SampleNFT"
             price={price}
             signer={userSigner}
@@ -364,72 +353,6 @@ function App(props) {
             blockExplorer={blockExplorer}
             contractConfig={contractConfig}
             chainId={selectedChainId}
-          />
-          <Contract
-            name="TokenGate"
-            price={price}
-            signer={userSigner}
-            mainnetProvider={mainnetProvider}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-            chainId={selectedChainId}
-          />
-          <Contract
-            name="AirdropFinder"
-            price={price}
-            signer={userSigner}
-            mainnetProvider={mainnetProvider}
-            provider={localProvider}
-            address={address}
-            blockExplorer={blockExplorer}
-            contractConfig={contractConfig}
-            chainId={selectedChainId}
-          />
-          
-        </Route>
-        <Route path="/hints">
-          <Hints
-            address={address}
-            yourLocalBalance={yourLocalBalance}
-            mainnetProvider={mainnetProvider}
-            price={price}
-          />
-        
-        </Route>
-        <Route path="/exampleui">
-          <ExampleUI
-            address={address}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            yourLocalBalance={yourLocalBalance}
-            price={price}
-            tx={tx}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            purpose={purpose}
-          />
-        </Route>
-        <Route path="/mainnetdai">
-          <Contract
-            name="DAI"
-            customContract={mainnetContracts && mainnetContracts.contracts && mainnetContracts.contracts.DAI}
-            signer={userSigner}
-            provider={mainnetProvider}
-            address={address}
-            blockExplorer="https://etherscan.io/"
-            contractConfig={contractConfig}
-            chainId={1}
-          />
-        </Route>
-        <Route path="/subgraph">
-          <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
           />
         </Route>
         <Route path="/minter">
@@ -568,23 +491,6 @@ function App(props) {
               chainId={selectedChainId}
             />
           </Route>
-          <Route path="/yourcollectibles">
-            <YourCollectibles
-              address={address}
-              userSigner={userSigner}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-              blockExplorer = {blockExplorer}
-              chainId={selectedChainId}
-            />
-          </Route>
-          
-          
       </Switch>
 
       
