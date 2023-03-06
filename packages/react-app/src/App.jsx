@@ -307,23 +307,11 @@ function App(props) {
         <Menu.Item key="/">
           <Link to="/">Home</Link>
         </Menu.Item>
-        <Menu.Item key="/debug">
-          <Link to="/debug">Debug Contracts</Link>
-        </Menu.Item>
-        <Menu.Item key="/subgraph">
-          <Link to="/subgraph">Subgraph</Link>
-        </Menu.Item>
-        <Menu.Item key="/minter">
-          <Link to="/minter">Minter</Link>
-        </Menu.Item>
-        <Menu.Item key="/mintsamples">
-          <Link to="/mintsamples">Mint SAMPs</Link>
-        </Menu.Item>
-        <Menu.Item key="/burner">
-          <Link to="/burner">Burner</Link>
+        <Menu.Item key="/searchnft">
+          <Link to="/searchnft">Search for NFP Tokens</Link>
         </Menu.Item>
         <Menu.Item key="/mynfps">
-          <Link to="/mynfps">View NFP Tokens</Link>
+          <Link to="/mynfps">View My NFP Tokens</Link>
         </Menu.Item>
         
       </Menu>
