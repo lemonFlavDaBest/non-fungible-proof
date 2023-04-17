@@ -1,4 +1,7 @@
 # NONFUNGIBLE PROOF INFORMATION
+
+current live link: https://non-fungible-proof.surge.sh/
+
 ## Contracts 
 The entirety of the contracts is in packages/hardhat/contracts/NFProof.sol . The other contracts in 
 The idea of this contract is to Mint an ERC721 token that you can prove ownership from another address (ie COLD WALLET --> HOT WALLET). The NonFungibleProof Token can do this by leveraging IERC4907. This allows the ERC721 token to set a user(another hot wallet address in our case) for the token. For the purpose of our contract, setting the user of a token is granting that wallet Proof of Ownership. 
